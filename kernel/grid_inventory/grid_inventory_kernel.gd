@@ -1,23 +1,28 @@
 @tool
 extends TextureRect
-class_name PluginGridInventoryKernel
+class_name GridInventoryKernel
 
+## 处理无法放进时输出物品数据
 signal inventory_overflow_item(overflow_data: Array)
+signal is_inventory_change(item: Node)
 
 @export var gridmap_index: Vector2i
 
-@export var item_data_list: InventoryGridMapItemList
+@export var item_data_list: GridInventoryItemList
 
 @export var cell_size: int = 64
 @export_tool_button("Update index") var update_index: Callable = _build_cells_panel
 
-@export var item_selection_size: InventoryGridMapRect
+@export var item_selection_size: GridInventorySelectionRect
+@export var item_package: PackedScene = preload("uid://l2hhk8ohwlwn")
 
 var cells_occupy = []
 
-var mouse_selection: InventoryItemView
+var mouse_selection: GridInventoryItem
 
-const ITEM_PACK = preload("uid://cqbam6jt73rtf")
+func _ready() -> void:
+	child_entered_tree.connect(_on_item_entered_tree)
+	child_exiting_tree.connect(_on_item_exited_tree)
 
 func _can_place_on_grid(pos: Vector2i, item_size: Vector2i):
 	var math_bottom_right = pos + item_size - Vector2i(1, 1)
@@ -29,55 +34,97 @@ func _can_place_on_grid(pos: Vector2i, item_size: Vector2i):
 		
 	return _is_cells_empty(pos, item_size)
 
-func _create_grid_item(item_name: String, set_quantity: int):
-	var get_item_data: InventoryItemData = item_data_list.get_item_resource(item_name)
-	var get_top_left = _scan_cells_ract_empty(get_item_data._get_item_size())
-	
-	print("top_left:", get_top_left)
+func _create_grid_item(item_name: String, set_quantity: int, write_cache: Dictionary = {}):
+	var get_item_data: GridItemData = item_data_list.get_item_resource(item_name)
+	if get_item_data == null:
+		print_rich("[color=red] [ERROR][/color]", " Can't found this item: ", item_name)
+		inventory_overflow_item.emit([item_name, set_quantity])
+		return
+	var size_normal: Vector2i = get_item_data.item_size
+	var size_rotated := Vector2i(get_item_data.item_size.y, get_item_data.item_size.x)
+	var get_top_left = _scan_cells_ract_empty(size_normal)
+	var get_top_left_rotated = _scan_cells_ract_empty(size_rotated)
+
 	if get_top_left == Vector2i(-1, -1):
+		if get_top_left_rotated != Vector2i(-1, -1):
+			var set_top_left_rotate = Vector2(get_top_left_rotated) * cell_size
+			_add_item_to_grid(
+				set_top_left_rotate, 
+				get_top_left_rotated, 
+				size_rotated, 
+				get_item_data, 
+				set_quantity, 
+				true, 
+				write_cache
+				)
+
+			return
 		print_rich("[color=red] [ERROR][/color]", " Can't add this item. this object will not be generated. ")
 		inventory_overflow_item.emit([item_name, set_quantity])
 		return
 	
 	var set_top_left = Vector2(get_top_left) * cell_size
-	_add_item_to_grid(set_top_left, get_top_left, get_item_data.item_size, item_name, set_quantity)
+	_add_item_to_grid(
+		set_top_left, 
+		get_top_left, 
+		size_normal, 
+		get_item_data, 
+		set_quantity, 
+		false, 
+		write_cache
+		)
 
-func _create_grid_item_base(data: InventoryItemData, i_position: Vector2, c_size: Vector2i, quantity: int, is_rotated: bool):
+func _create_grid_item_base(data: GridItemData, i_position: Vector2, i_size: Vector2i, quantity: int, is_rotated: bool, write_cache: Dictionary = {}):
+	if data == null:
+		return
 	var get_top_left = Vector2(i_position) / cell_size
 	var set_top_left = Vector2(get_top_left) * cell_size
-	_add_item_to_grid(set_top_left, get_top_left, c_size, data.item_name, quantity, is_rotated)
+	_add_item_to_grid(set_top_left, get_top_left, i_size, data, quantity, is_rotated, write_cache)
 
-func _create_save_timeshift() -> Array:
+func _create_snapshot() -> Array:
 	var save_timeshift = []
 	if get_child_count() > 0:
-		for item: InventoryItemView in get_children():
+		for item: GridInventoryItem in get_children():
+			if item.item_database == null:
+				continue
 			var create_config = {}
-			create_config["data"] = item.item_database
+			create_config["data"] = item.item_database.data
 			create_config["quantity"] = item.quantity
 			create_config["position"] = item.position
 			create_config["is_rotated"] = item.is_rotated
+			create_config["cache_storage"] = item.item_database.cache
 			save_timeshift.append(create_config)
 
-	print("create save config.")
 	return save_timeshift
 	
 
-func _read_save_timeshift(read_resource: Array) -> void:
+func _read_snapshot(read_resource: Array) -> void:
 	if not read_resource.is_empty():
-		print("read save config.")
 		for sav_config in read_resource:
-			var port_data = sav_config.get("data")
+			var port_data: GridItemData = sav_config.get("data")
 			var port_quantity = sav_config.get("quantity")
 			var port_position = sav_config.get("position")
 			var port_is_rotated = sav_config.get("is_rotated")
-			_create_grid_item_base(port_data, port_position, port_data.item_size, port_quantity, port_is_rotated)
+			var port_cache = sav_config.get("cache_storage")
+			
+			if port_data == null:
+				continue
+			if port_cache == null:
+				continue
+			_create_grid_item_base(port_data, port_position, port_data.item_size, port_quantity, port_is_rotated, port_cache)
 	
 
-func _add_item_to_grid(c_position: Vector2, grid_pos: Vector2i, c_size: Vector2i, item_name: String, quantity: int, is_rotated: bool = false) -> void:
-	var inter_item: InventoryItemView = ITEM_PACK.instantiate()
+func _add_item_to_grid(c_position: Vector2, grid_pos: Vector2i, c_size: Vector2i, item_data: GridItemData, quantity: int, is_rotated: bool = false, write_cache: Dictionary = {}) -> void:
+	var inter_item: GridInventoryItem = item_package.instantiate()
 	inter_item.position = c_position
 	inter_item.quantity = quantity
-	inter_item.item_database = item_data_list.get_item_resource(item_name)
+
+	var layer_data := GridInventoryItemData.new()
+	layer_data.data = item_data
+	layer_data.quantity = quantity
+	layer_data.cache = write_cache
+	
+	inter_item.item_database = layer_data
 	inter_item.item_size = c_size
 	inter_item.is_rotated = is_rotated
 	self.add_child(inter_item)
@@ -161,6 +208,8 @@ func _get_cells_divination(start_vec: Vector2i, item_size: Vector2i):
 	return true
 
 func _preview_gridmap(mouse_px: Vector2, selection_size: Vector2i) -> void:
+	if item_selection_size == null:
+		return
 	var math_size = Vector2(selection_size) * 0.5
 	var top_left_index = _math_top_left(mouse_px, selection_size)
 	var px = (Vector2(top_left_index) + math_size) * cell_size
@@ -177,6 +226,8 @@ func _preview_gridmap(mouse_px: Vector2, selection_size: Vector2i) -> void:
 		item_selection_size.visible = false
 
 func _preview_gridmap_hide() -> void:
+	if item_selection_size == null:
+		return
 	item_selection_size.visible = false
 
 
@@ -192,3 +243,9 @@ func _is_mouse_entered_item(rect):
 	
 func _is_mouse_exited_item():
 	mouse_selection = null
+	
+func _on_item_entered_tree(node):
+	is_inventory_change.emit(node)
+	
+func _on_item_exited_tree(node):
+	is_inventory_change.emit(node)

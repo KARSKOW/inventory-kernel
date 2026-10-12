@@ -104,7 +104,7 @@ func dropped_equip():
 	
 	if mouse_select_equip.get_child_count() > 0:
 		var existing_item = mouse_select_equip.get_child(0)
-		if existing_item is InventoryItemView and (get_dragging_item_type == get_equippment_type):
+		if existing_item is GridInventoryItem and (get_dragging_item_type == get_equippment_type):
 			var new_spot = mouse_entered_inventory._scan_cells_ract_empty(existing_item.item_size)
 			if new_spot != Vector2i(-1, -1):
 				existing_item.reparent(mouse_entered_inventory, false)
@@ -176,7 +176,7 @@ func _connect_equipment_mouse_entered():
 		push_warning("NON EQUIP LIST. EQUIP-SLOT ISN'T NOT WORKED.")
 		return
 	for i in get_equip_list.get_children():
-		if i is InventoryGridMapSlot:
+		if i is GridInventoryMap:
 			i.mouse_entered_slot.connect(mouse_entered_equip_slot)
 			i.mouse_exited_slot.connect(mouse_exited_equip_slot)
 
