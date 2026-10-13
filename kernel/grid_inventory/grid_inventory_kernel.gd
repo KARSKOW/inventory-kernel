@@ -1,20 +1,30 @@
 @tool
-extends TextureRect
+@abstract
+extends Control
 class_name GridInventoryKernel
 
-## 处理无法放进时输出物品数据
 signal inventory_overflow_item(overflow_data: Array)
 signal is_inventory_change(item: Node)
 
-@export var gridmap_index: Vector2i
-
+@export var map_index: Vector2i:
+	set(value):
+		map_index = value
+		_create_cells_panel()
+		
 @export var item_data_list: GridInventoryItemList
-
-@export var cell_size: int = 64
-@export_tool_button("Update index") var update_index: Callable = _build_cells_panel
-
 @export var item_selection_size: GridInventorySelectionRect
 @export var item_package: PackedScene = preload("uid://l2hhk8ohwlwn")
+
+@export_group("Cell setting")
+@export var cell_size: int = 64:
+	set(value):
+		cell_size = value
+		_create_cells_panel()
+		
+@export var cell_texture: Texture2D:
+	set(value):
+		cell_texture = value
+		queue_redraw()
 
 var cells_occupy = []
 
@@ -23,13 +33,21 @@ var mouse_selection: GridInventoryItem
 func _ready() -> void:
 	child_entered_tree.connect(_on_item_entered_tree)
 	child_exiting_tree.connect(_on_item_exited_tree)
+	
+func _draw() -> void:
+	if cell_texture:
+		draw_texture_rect(
+			cell_texture,
+			Rect2(Vector2.ZERO, size),
+			true
+		)
 
 func _can_place_on_grid(pos: Vector2i, item_size: Vector2i):
 	var math_bottom_right = pos + item_size - Vector2i(1, 1)
 	
 	if pos.x < 0 or pos.y < 0 \
-	 or math_bottom_right.x >= gridmap_index.x \
-	 or math_bottom_right.y >= gridmap_index.y:
+	 or math_bottom_right.x >= map_index.x \
+	 or math_bottom_right.y >= map_index.y:
 		return false
 		
 	return _is_cells_empty(pos, item_size)
@@ -140,15 +158,18 @@ func _math_top_left(math_px: Vector2, item_size: Vector2i) -> Vector2i:
 	var math_pos_px = Vector2i(round(math_grid_index.x), round(math_grid_index.y))
 	return math_pos_px
 
-func _build_cells_divination() -> void:
-	for y in range(gridmap_index.y):
+func _create_cells_divination() -> void:
+	for y in range(map_index.y):
 		var y_cell = []
-		for x in range(gridmap_index.x):
+		for x in range(map_index.x):
 			y_cell.append(null)
 		cells_occupy.append(y_cell)
 		
-func _build_cells_panel():
-	self.custom_minimum_size = Vector2(gridmap_index) * cell_size
+func _create_cells_panel() -> void:
+	custom_minimum_size = Vector2(map_index) * cell_size
+	if not resized.is_connected(queue_redraw):
+		resized.connect(queue_redraw)
+	queue_redraw()
 
 func _scan_item_rect(px: Vector2, area: Vector2i):
 	var top_left = _math_top_left(px, area)
@@ -158,7 +179,7 @@ func _scan_item_rect(px: Vector2, area: Vector2i):
 		for x in range(area.x):
 			var gx = top_left.x + x
 			var gy = top_left.y + y
-			if gx < 0 or gy < 0 or gx >= gridmap_index.x or gy >= gridmap_index.y:
+			if gx < 0 or gy < 0 or gx >= map_index.x or gy >= map_index.y:
 				continue
 			var cell = cells_occupy[gy][gx]
 			if cell != null:
@@ -167,8 +188,8 @@ func _scan_item_rect(px: Vector2, area: Vector2i):
 	return item_found
 
 func _scan_cells_ract_empty(area: Vector2i) -> Vector2i:
-	for y in range(gridmap_index.y - area.y + 1):
-		for x in range(gridmap_index.x - area.x + 1):
+	for y in range(map_index.y - area.y + 1):
+		for x in range(map_index.x - area.x + 1):
 			if _is_cells_empty(Vector2(x, y), Vector2(area.x, area.y)):
 				return Vector2i(x, y)
 	return Vector2i(-1, -1)
@@ -185,8 +206,8 @@ func _is_within_bounds(px: Vector2, g_size: Vector2i) -> bool:
 	var math_bottom_right = top_left_index + g_size - Vector2i(1, 1)
 	
 	if top_left_index.x >= 0 and top_left_index.y >= 0 \
-		and math_bottom_right.x < gridmap_index.x \
-		and math_bottom_right.y < gridmap_index.y:
+		and math_bottom_right.x < map_index.x \
+		and math_bottom_right.y < map_index.y:
 		return true
 	else:
 		return false
@@ -201,7 +222,7 @@ func _get_cells_divination(start_vec: Vector2i, item_size: Vector2i):
 		for x in range(item_size.x):
 			var gy = start_vec.y + y
 			var gx = start_vec.x + x
-			if gy < 0 or gy >= gridmap_index.y or gx < 0 or gx >= gridmap_index.x:
+			if gy < 0 or gy >= map_index.y or gx < 0 or gx >= map_index.x:
 				return false
 			if cells_occupy[gy][gx] != null:
 				return false
@@ -230,13 +251,11 @@ func _preview_gridmap_hide() -> void:
 		return
 	item_selection_size.visible = false
 
-
-
 func _dev_update_index() -> void:
-	_build_cells_panel()
+	_create_cells_panel()
 
 func _on_resized() -> void:
-	_build_cells_panel()
+	_create_cells_panel()
 
 func _is_mouse_entered_item(rect):
 	mouse_selection = rect

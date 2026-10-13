@@ -7,8 +7,9 @@ var inventory_item_data_tree = []
 func _ready() -> void:
 	super._ready()
 	if not Engine.is_editor_hint():
-		_build_cells_divination()
+		_create_cells_divination()
 		mouse_exited.connect(func(): _preview_gridmap_hide())
+
 		
 func create_item(item_name: String, set_quantity: int, write_cache: Dictionary = {}):
 	var get_item_data: GridItemData = item_data_list.get_item_resource(item_name)
@@ -41,7 +42,7 @@ func clear_all_items(use_free: bool = true):
 		else:
 			remove_child(item)
 	cells_occupy = []
-	_build_cells_divination()
+	_create_cells_divination()
 
 func clear_item(item: GridInventoryItem):
 	_tar_clean_item_divination(item)
@@ -158,7 +159,7 @@ func sorted_item():
 	for item: GridInventoryItem in get_children():
 		sort_collect.append(item)
 
-	_clean_item_divination(Vector2i.ZERO, gridmap_index)
+	_clean_item_divination(Vector2i.ZERO, map_index)
 	
 	if sort_collect.size() <= 0:
 		return
