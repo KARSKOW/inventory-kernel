@@ -1,0 +1,135 @@
+[gd_scene format=3 uid="uid://crladll77hhap"]
+
+[ext_resource type="Script" uid="uid://cxt3ynwkcqaf4" path="res://addons/inventorykernel/editor/pack/tool/data_creater.gd" id="1_tt3p0"]
+
+[node name="tool_theme" type="Control" unique_id=2069438867]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MES" type="VBoxContainer" parent="." unique_id=1692028496]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="box" type="HBoxContainer" parent="MES" unique_id=824915475]
+layout_mode = 2
+
+[node name="plugin-name" type="Label" parent="MES/box" unique_id=996643762]
+layout_mode = 2
+theme_override_font_sizes/font_size = 35
+text = "Inventory-Kernel"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="VSeparator" type="VSeparator" parent="MES/box" unique_id=1925804809]
+layout_mode = 2
+
+[node name="lic" type="Panel" parent="MES/box" unique_id=801662245]
+custom_minimum_size = Vector2(137.771, 0)
+layout_mode = 2
+
+[node name="name" type="Label" parent="MES/box/lic" unique_id=1260939748]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -42.5
+offset_top = -11.5
+offset_right = 42.5
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 22
+text = "Apache 2.0"
+
+[node name="HSeparator" type="HSeparator" parent="MES" unique_id=867354813]
+layout_mode = 2
+
+[node name="TabContainer" type="TabContainer" parent="MES" unique_id=1319625116]
+custom_minimum_size = Vector2(0, 568.61)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+current_tab = 1
+
+[node name="Welcome" type="TabBar" parent="MES/TabContainer" unique_id=1333337432]
+visible = false
+layout_mode = 2
+theme_override_constants/hover_switch_wait_msec = 500
+metadata/_tab_index = 0
+
+[node name="Label" type="Label" parent="MES/TabContainer/Welcome" unique_id=1212354721]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 32
+text = "欢迎使用。"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Data-Creator" type="TabBar" parent="MES/TabContainer" unique_id=244484200]
+layout_mode = 2
+script = ExtResource("1_tt3p0")
+metadata/_tab_index = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MES/TabContainer/Data-Creator" unique_id=370448884]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HSeparator4" type="HSeparator" parent="MES/TabContainer/Data-Creator/VBoxContainer" unique_id=1648614315]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MES/TabContainer/Data-Creator/VBoxContainer" unique_id=1497884202]
+layout_mode = 2
+text = "Resource template: "
+
+[node name="resource_selecter" type="EditorResourcePicker" parent="MES/TabContainer/Data-Creator/VBoxContainer" unique_id=862294433]
+layout_mode = 2
+base_type = "GridItemData"
+
+[node name="HSeparator3" type="HSeparator" parent="MES/TabContainer/Data-Creator/VBoxContainer" unique_id=751832357]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="MES/TabContainer/Data-Creator/VBoxContainer" unique_id=267085436]
+layout_mode = 2
+text = "Resource list: "
+
+[node name="variant_list" type="ScrollContainer" parent="MES/TabContainer/Data-Creator/VBoxContainer" unique_id=1390219825]
+custom_minimum_size = Vector2(0, 373.241)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MES/TabContainer/Data-Creator/VBoxContainer/variant_list" unique_id=825759093]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MES/TabContainer/Data-Creator/VBoxContainer" unique_id=243934807]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="MES/TabContainer/Data-Creator/VBoxContainer/HBoxContainer" unique_id=1439122362]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Save"
+
+[node name="EditorFileDialog" type="EditorFileDialog" parent="MES/TabContainer/Data-Creator/VBoxContainer/HBoxContainer" unique_id=749532025]
+oversampling_override = 1.0
+position = Vector2i(0, 36)
+filters = PackedStringArray("*.res", "*.tres")
+
+[connection signal="resource_changed" from="MES/TabContainer/Data-Creator/VBoxContainer/resource_selecter" to="MES/TabContainer/Data-Creator" method="_on_resource_changed"]
+[connection signal="pressed" from="MES/TabContainer/Data-Creator/VBoxContainer/HBoxContainer/Button" to="MES/TabContainer/Data-Creator" method="_on_save_button_pressed"]
+[connection signal="file_selected" from="MES/TabContainer/Data-Creator/VBoxContainer/HBoxContainer/EditorFileDialog" to="MES/TabContainer/Data-Creator" method="_on_editor_dialog_file_selected"]

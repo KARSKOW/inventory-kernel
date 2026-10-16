@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://bng6tkywrl1gc"]
+
+[ext_resource type="Script" uid="uid://c0gitx5ddkrjv" path="res://addons/inventorykernel/editor/pack/set_variant/script/variant_string.gd" id="1_5kuqh"]
+
+[node name="variant_string" type="HBoxContainer" unique_id=2134623032]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 31.0
+grow_horizontal = 2
+size_flags_horizontal = 3
+script = ExtResource("1_5kuqh")
+
+[node name="Label" type="Label" parent="." unique_id=612803330]
+layout_mode = 2
+text = "Null: "
+
+[node name="LineEdit" type="LineEdit" parent="." unique_id=354258873]
+layout_mode = 2
+size_flags_horizontal = 3

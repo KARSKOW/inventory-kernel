@@ -1,10 +1,9 @@
 extends CanvasLayer
 
-class_name TakeModule
+class_name DragModule
 
 var is_dragging: bool = false
 
-const ITEM_PACK = preload("uid://l2hhk8ohwlwn")
 
 func _process(_delta: float) -> void:
 	if is_dragging == true:
@@ -12,16 +11,16 @@ func _process(_delta: float) -> void:
 		get_child(0).position = get_child(0).get_global_mouse_position() - math_size / 2
 
 func create_new_drag_item(data: GridInventoryItemData, set_quantity: int, is_rotate: bool):
-	var new_item = ITEM_PACK.instantiate()
-	new_item.item_database = data
-	new_item.quantity = set_quantity
-	new_item.is_rotated = is_rotate
-	new_item.set_rotated()
-	add_child(new_item)
+	#var new_item = ITEM_PACK.instantiate()
+	#new_item.item_database = data
+	#new_item.quantity = set_quantity
+	#new_item.is_rotated = is_rotate
+	#new_item.set_rotated()
+	#add_child(new_item)
 
-	var math_size = Vector2(new_item.item_size) * new_item.item_cell_size
-	new_item.position = new_item.get_global_mouse_position() - math_size / 2
-	get_child(0).mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED
+	#var math_size = Vector2(new_item.item_size) * new_item.item_cell_size
+	#new_item.position = new_item.get_global_mouse_position() - math_size / 2
+	#get_child(0).mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED
 	is_dragging = true
 
 func get_dragging_itemdata():

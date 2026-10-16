@@ -8,8 +8,6 @@ func _ready() -> void:
 	super._ready()
 	if not Engine.is_editor_hint():
 		_create_cells_divination()
-		mouse_exited.connect(func(): _preview_gridmap_hide())
-
 		
 func create_item(item_name: String, set_quantity: int, write_cache: Dictionary = {}):
 	var get_item_data: GridItemData = item_data_list.get_item_resource(item_name)
@@ -30,10 +28,6 @@ func create_item(item_name: String, set_quantity: int, write_cache: Dictionary =
 		
 func create_item_base(data: GridItemData, quantity: int, i_size: Vector2i, i_position: Vector2, i_rorated: bool):
 	_create_grid_item_base(data, i_position, i_size, quantity, i_rorated)
-
-func create_inventory_item_data():
-	inventory_item_data_tree = _create_snapshot()
-	return _create_snapshot()
 
 func clear_all_items(use_free: bool = true):
 	for item in self.get_children():
@@ -76,9 +70,13 @@ func stacked_item(target_item: GridInventoryItem, selection: GridInventoryItem) 
 		selection.quantity += space
 		target_item.quantity -= space
 		return target_item.quantity > 0
+
+func create_inventory_snapshot():
+	inventory_item_data_tree = _create_snapshot()
+	return _create_snapshot()
 	
-func external_write_inventory_data(inventory_timeshift: Array):
-	_read_snapshot(inventory_timeshift)
+func read_inventory_snapshot(inventory_snapshot: Array):
+	_read_snapshot(inventory_snapshot)
 
 func has_item_name(target_name: String) -> bool:
 	for i: GridInventoryItem in get_children():

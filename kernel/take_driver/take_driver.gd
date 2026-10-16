@@ -1,6 +1,6 @@
-extends TakeModule
+extends DragModule
 
-@export var get_equip_list: Control
+var get_equip_list: Control
 
 var last_drop_item: Vector2i
 var last_drop_rotate: bool

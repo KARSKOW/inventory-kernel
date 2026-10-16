@@ -6,20 +6,21 @@ class_name GridInventoryKernel
 signal inventory_overflow_item(overflow_data: Array)
 signal is_inventory_change(item: Node)
 
-@export var map_index: Vector2i:
+@export var map_index: Vector2i = Vector2i(1, 1):
 	set(value):
 		map_index = value
-		_create_cells_panel()
+		_update_cells_panel()
+		
+@export var map_choosing_texture: Texture2D
 		
 @export var item_data_list: GridInventoryItemList
-@export var item_selection_size: GridInventorySelectionRect
-@export var item_package: PackedScene = preload("uid://l2hhk8ohwlwn")
+@export var item_package: PackedScene
 
 @export_group("Cell setting")
 @export var cell_size: int = 64:
 	set(value):
 		cell_size = value
-		_create_cells_panel()
+		_update_cells_panel()
 		
 @export var cell_texture: Texture2D:
 	set(value):
@@ -41,6 +42,8 @@ func _draw() -> void:
 			Rect2(Vector2.ZERO, size),
 			true
 		)
+	if map_choosing_texture:
+		_preview_selecter(get_local_mouse_position(), Vector2i())
 
 func _can_place_on_grid(pos: Vector2i, item_size: Vector2i):
 	var math_bottom_right = pos + item_size - Vector2i(1, 1)
@@ -165,7 +168,7 @@ func _create_cells_divination() -> void:
 			y_cell.append(null)
 		cells_occupy.append(y_cell)
 		
-func _create_cells_panel() -> void:
+func _update_cells_panel() -> void:
 	custom_minimum_size = Vector2(map_index) * cell_size
 	if not resized.is_connected(queue_redraw):
 		resized.connect(queue_redraw)
@@ -228,34 +231,31 @@ func _get_cells_divination(start_vec: Vector2i, item_size: Vector2i):
 				return false
 	return true
 
-func _preview_gridmap(mouse_px: Vector2, selection_size: Vector2i) -> void:
-	if item_selection_size == null:
-		return
-	var math_size = Vector2(selection_size) * 0.5
-	var top_left_index = _math_top_left(mouse_px, selection_size)
+func _preview_selecter(mouse_px: Vector2, chooise_size: Vector2i) -> void:
+	var math_size = Vector2(chooise_size) * 0.5
+	var top_left_index = _math_top_left(mouse_px, chooise_size)
 	var px = (Vector2(top_left_index) + math_size) * cell_size
 	
-	if _is_within_bounds(mouse_px, selection_size):
-		if _scan_item_rect(mouse_px, selection_size).size() <= 1:
-			var new_size = Vector2(selection_size.x * cell_size, selection_size.y * cell_size)
-			item_selection_size.set_selection_rect(new_size)
-			item_selection_size.set_selection_position(px - new_size / 2)
-			item_selection_size.visible = true
+	if _is_within_bounds(mouse_px, chooise_size):
+		if _scan_item_rect(mouse_px, chooise_size).size() <= 1:
+			var new_size = Vector2(chooise_size.x * cell_size, chooise_size.y * cell_size)
+			draw_texture_rect(
+				map_choosing_texture,
+				Rect2((px - new_size / 2), new_size),
+				false
+				)
+			#item_selection_size.set_selection_rect(new_size)
+			#item_selection_size.set_selection_position(px - new_size / 2)
 		else:
-			item_selection_size.visible = false
+			queue_redraw()
 	else:
-		item_selection_size.visible = false
-
-func _preview_gridmap_hide() -> void:
-	if item_selection_size == null:
-		return
-	item_selection_size.visible = false
+		queue_redraw()
 
 func _dev_update_index() -> void:
-	_create_cells_panel()
+	_update_cells_panel()
 
 func _on_resized() -> void:
-	_create_cells_panel()
+	_update_cells_panel()
 
 func _is_mouse_entered_item(rect):
 	mouse_selection = rect

@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://bjn7nrwx2a2p3"]
+
+[ext_resource type="Script" uid="uid://bs88dh55veyf" path="res://addons/inventorykernel/editor/pack/set_variant/script/variant_image.gd" id="1_6h6x7"]
+
+[node name="variant_image" type="HBoxContainer" unique_id=2134623032]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 31.0
+grow_horizontal = 2
+size_flags_horizontal = 3
+alignment = 1
+script = ExtResource("1_6h6x7")
+
+[node name="Label" type="Label" parent="." unique_id=612803330]
+layout_mode = 2
+text = "Null: "
+
+[node name="EditorResourcePicker" type="EditorResourcePicker" parent="." unique_id=2049270813]
+layout_mode = 2
+size_flags_horizontal = 3
+base_type = "Texture2D"
+
+[connection signal="resource_changed" from="EditorResourcePicker" to="." method="_on_editor_resource_changed"]
