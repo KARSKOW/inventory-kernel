@@ -1,9 +1,8 @@
 [gd_scene format=3 uid="uid://bng6tkywrl1gc"]
 
-[ext_resource type="Script" uid="uid://c0gitx5ddkrjv" path="res://addons/inventorykernel/editor/pack/set_variant/script/variant_string.gd" id="1_5kuqh"]
+[ext_resource type="Script" uid="uid://c0gitx5ddkrjv" path="res://addons/inventorykernel/editor/pack/variant_item_data/script/variant_string.gd" id="1_5kuqh"]
 
 [node name="variant_string" type="HBoxContainer" unique_id=2134623032]
-anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 31.0
 grow_horizontal = 2

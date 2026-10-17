@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://crladll77hhap"]
 
-[ext_resource type="Script" uid="uid://cxt3ynwkcqaf4" path="res://addons/inventorykernel/editor/pack/tool/data_creater.gd" id="1_tt3p0"]
+[ext_resource type="Script" uid="uid://cxt3ynwkcqaf4" path="res://addons/inventorykernel/editor/pack/create_item_data/data_creater.gd" id="1_tt3p0"]
+[ext_resource type="Script" uid="uid://0jpmuv7f43pt" path="res://addons/inventorykernel/editor/pack/create_item_db/item_db_create.gd" id="2_h2ka8"]
 
 [node name="tool_theme" type="Control" unique_id=2069438867]
 layout_mode = 3
@@ -21,35 +22,19 @@ grow_vertical = 2
 [node name="box" type="HBoxContainer" parent="MES" unique_id=824915475]
 layout_mode = 2
 
-[node name="plugin-name" type="Label" parent="MES/box" unique_id=996643762]
+[node name="plugin-name" type="RichTextLabel" parent="MES/box" unique_id=2128143815]
+custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 35
-text = "Inventory-Kernel"
+theme_override_font_sizes/italics_font_size = 32
+bbcode_enabled = true
+text = "[fade start=1 length=40][i]Inventory-Kernel"
+fit_content = true
+autowrap_mode = 1
 horizontal_alignment = 1
-vertical_alignment = 2
+vertical_alignment = 1
 
 [node name="VSeparator" type="VSeparator" parent="MES/box" unique_id=1925804809]
 layout_mode = 2
-
-[node name="lic" type="Panel" parent="MES/box" unique_id=801662245]
-custom_minimum_size = Vector2(137.771, 0)
-layout_mode = 2
-
-[node name="name" type="Label" parent="MES/box/lic" unique_id=1260939748]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -42.5
-offset_top = -11.5
-offset_right = 42.5
-offset_bottom = 11.5
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 22
-text = "Apache 2.0"
 
 [node name="HSeparator" type="HSeparator" parent="MES" unique_id=867354813]
 layout_mode = 2
@@ -57,33 +42,40 @@ layout_mode = 2
 [node name="TabContainer" type="TabContainer" parent="MES" unique_id=1319625116]
 custom_minimum_size = Vector2(0, 568.61)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
-current_tab = 1
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 16
+current_tab = 2
 
-[node name="Welcome" type="TabBar" parent="MES/TabContainer" unique_id=1333337432]
+[node name="Describes" type="TabBar" parent="MES/TabContainer" unique_id=1333337432]
 visible = false
 layout_mode = 2
 theme_override_constants/hover_switch_wait_msec = 500
 metadata/_tab_index = 0
 
-[node name="Label" type="Label" parent="MES/TabContainer/Welcome" unique_id=1212354721]
+[node name="Label" type="RichTextLabel" parent="MES/TabContainer/Describes" unique_id=1190301974]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 32
-text = "欢迎使用。"
+theme_override_font_sizes/bold_italics_font_size = 16
+theme_override_font_sizes/italics_font_size = 40
+bbcode_enabled = true
+text = "[i]Welcome[/i]
+Thank you for using this plugin.
+
+LICENSE: [u]Apache License 2.0[/u]"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Data-Creator" type="TabBar" parent="MES/TabContainer" unique_id=244484200]
+[node name="ItemData" type="TabBar" parent="MES/TabContainer" unique_id=244484200]
+visible = false
 layout_mode = 2
 script = ExtResource("1_tt3p0")
 metadata/_tab_index = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MES/TabContainer/Data-Creator" unique_id=370448884]
+[node name="VBoxContainer" type="VBoxContainer" parent="MES/TabContainer/ItemData" unique_id=370448884]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -91,45 +83,101 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="HSeparator4" type="HSeparator" parent="MES/TabContainer/Data-Creator/VBoxContainer" unique_id=1648614315]
+[node name="HSeparator4" type="HSeparator" parent="MES/TabContainer/ItemData/VBoxContainer" unique_id=1648614315]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="MES/TabContainer/Data-Creator/VBoxContainer" unique_id=1497884202]
+[node name="Label" type="Label" parent="MES/TabContainer/ItemData/VBoxContainer" unique_id=1497884202]
 layout_mode = 2
 text = "Resource template: "
 
-[node name="resource_selecter" type="EditorResourcePicker" parent="MES/TabContainer/Data-Creator/VBoxContainer" unique_id=862294433]
+[node name="resource_selecter" type="EditorResourcePicker" parent="MES/TabContainer/ItemData/VBoxContainer" unique_id=862294433]
 layout_mode = 2
 base_type = "GridItemData"
 
-[node name="HSeparator3" type="HSeparator" parent="MES/TabContainer/Data-Creator/VBoxContainer" unique_id=751832357]
+[node name="HSeparator3" type="HSeparator" parent="MES/TabContainer/ItemData/VBoxContainer" unique_id=751832357]
 layout_mode = 2
 
-[node name="Label2" type="Label" parent="MES/TabContainer/Data-Creator/VBoxContainer" unique_id=267085436]
+[node name="Label2" type="Label" parent="MES/TabContainer/ItemData/VBoxContainer" unique_id=267085436]
 layout_mode = 2
 text = "Resource list: "
 
-[node name="variant_list" type="ScrollContainer" parent="MES/TabContainer/Data-Creator/VBoxContainer" unique_id=1390219825]
+[node name="variant_list" type="ScrollContainer" parent="MES/TabContainer/ItemData/VBoxContainer" unique_id=1390219825]
 custom_minimum_size = Vector2(0, 373.241)
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MES/TabContainer/Data-Creator/VBoxContainer/variant_list" unique_id=825759093]
+[node name="VBoxContainer" type="VBoxContainer" parent="MES/TabContainer/ItemData/VBoxContainer/variant_list" unique_id=825759093]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MES/TabContainer/Data-Creator/VBoxContainer" unique_id=243934807]
+[node name="HBoxContainer" type="HBoxContainer" parent="MES/TabContainer/ItemData/VBoxContainer" unique_id=243934807]
 layout_mode = 2
 
-[node name="Button" type="Button" parent="MES/TabContainer/Data-Creator/VBoxContainer/HBoxContainer" unique_id=1439122362]
+[node name="Button" type="Button" parent="MES/TabContainer/ItemData/VBoxContainer/HBoxContainer" unique_id=1439122362]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Save"
 
-[node name="EditorFileDialog" type="EditorFileDialog" parent="MES/TabContainer/Data-Creator/VBoxContainer/HBoxContainer" unique_id=749532025]
+[node name="EditorFileDialog" type="EditorFileDialog" parent="MES/TabContainer/ItemData/VBoxContainer/HBoxContainer" unique_id=749532025]
 oversampling_override = 1.0
 position = Vector2i(0, 36)
 filters = PackedStringArray("*.res", "*.tres")
 
-[connection signal="resource_changed" from="MES/TabContainer/Data-Creator/VBoxContainer/resource_selecter" to="MES/TabContainer/Data-Creator" method="_on_resource_changed"]
-[connection signal="pressed" from="MES/TabContainer/Data-Creator/VBoxContainer/HBoxContainer/Button" to="MES/TabContainer/Data-Creator" method="_on_save_button_pressed"]
-[connection signal="file_selected" from="MES/TabContainer/Data-Creator/VBoxContainer/HBoxContainer/EditorFileDialog" to="MES/TabContainer/Data-Creator" method="_on_editor_dialog_file_selected"]
+[node name="ItemDB" type="TabBar" parent="MES/TabContainer" unique_id=1111191295]
+layout_mode = 2
+script = ExtResource("2_h2ka8")
+metadata/_tab_index = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MES/TabContainer/ItemDB" unique_id=2108582745]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 23.0
+grow_horizontal = 2
+
+[node name="HSeparator" type="HSeparator" parent="MES/TabContainer/ItemDB/VBoxContainer" unique_id=1149782598]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MES/TabContainer/ItemDB/VBoxContainer" unique_id=1252345761]
+layout_mode = 2
+text = "ItemDB"
+
+[node name="HSeparator2" type="HSeparator" parent="MES/TabContainer/ItemDB/VBoxContainer" unique_id=645028420]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MES/TabContainer/ItemDB/VBoxContainer" unique_id=2031668386]
+layout_mode = 2
+alignment = 1
+
+[node name="create_db" type="Button" parent="MES/TabContainer/ItemDB/VBoxContainer/HBoxContainer" unique_id=1875819947]
+layout_mode = 2
+text = "Create ItemDB"
+
+[node name="join_item" type="Button" parent="MES/TabContainer/ItemDB/VBoxContainer/HBoxContainer" unique_id=1406723475]
+layout_mode = 2
+text = "Join item"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MES/TabContainer/ItemDB/VBoxContainer" unique_id=1168796398]
+custom_minimum_size = Vector2(0, 476.119)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MES/TabContainer/ItemDB/VBoxContainer/ScrollContainer" unique_id=164198245]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="API" type="TabBar" parent="MES/TabContainer" unique_id=495837967]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 3
+
+[node name="Setting" type="TabBar" parent="MES/TabContainer" unique_id=869186449]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 4
+
+[connection signal="resource_changed" from="MES/TabContainer/ItemData/VBoxContainer/resource_selecter" to="MES/TabContainer/ItemData" method="_on_resource_changed"]
+[connection signal="pressed" from="MES/TabContainer/ItemData/VBoxContainer/HBoxContainer/Button" to="MES/TabContainer/ItemData" method="_on_save_button_pressed"]
+[connection signal="file_selected" from="MES/TabContainer/ItemData/VBoxContainer/HBoxContainer/EditorFileDialog" to="MES/TabContainer/ItemData" method="_on_editor_dialog_file_selected"]
+[connection signal="pressed" from="MES/TabContainer/ItemDB/VBoxContainer/HBoxContainer/create_db" to="MES/TabContainer/ItemDB" method="_on_create_db_pressed"]
+[connection signal="pressed" from="MES/TabContainer/ItemDB/VBoxContainer/HBoxContainer/join_item" to="MES/TabContainer/ItemDB" method="_on_join_item_pressed"]

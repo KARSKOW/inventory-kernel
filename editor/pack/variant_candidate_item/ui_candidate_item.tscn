@@ -1,0 +1,33 @@
+[gd_scene format=3 uid="uid://de1hijm6rdeev"]
+
+[ext_resource type="Script" uid="uid://bs1rwd4w5r5q7" path="res://addons/inventorykernel/editor/pack/variant_candidate_item/ui_candidate_item.gd" id="1_usn7k"]
+
+[node name="ui_candidate_item" type="HBoxContainer" unique_id=1953471364]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 31.0
+grow_horizontal = 2
+size_flags_horizontal = 3
+script = ExtResource("1_usn7k")
+
+[node name="Label" type="RichTextLabel" parent="." unique_id=618142168]
+custom_minimum_size = Vector2(58.707, 0)
+layout_mode = 2
+bbcode_enabled = true
+text = "[i][u][color=yellow]Skip"
+fit_content = true
+autowrap_mode = 1
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EditorResourcePicker" type="EditorResourcePicker" parent="." unique_id=559126846]
+layout_mode = 2
+size_flags_horizontal = 3
+base_type = "GridItemData"
+
+[node name="Button" type="Button" parent="." unique_id=1270569412]
+layout_mode = 2
+text = "Remove"
+
+[connection signal="resource_changed" from="EditorResourcePicker" to="." method="_on_editor_resource_picker_resource_changed"]
+[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]

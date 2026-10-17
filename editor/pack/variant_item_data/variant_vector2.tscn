@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bi807ijemasdr"]
 
-[ext_resource type="Script" uid="uid://ddodtefx3fh5b" path="res://addons/inventorykernel/editor/pack/set_variant/script/variant_vec.gd" id="1_enrxl"]
+[ext_resource type="Script" uid="uid://ddodtefx3fh5b" path="res://addons/inventorykernel/editor/pack/variant_item_data/script/variant_vec.gd" id="1_enrxl"]
 
 [node name="variant_vector2" type="HBoxContainer" unique_id=2134623032]
 size_flags_horizontal = 3
@@ -18,6 +18,7 @@ text = "X"
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 min_value = 1.0
+max_value = 9999.0
 value = 1.0
 label = "int"
 control_state = 2
@@ -31,6 +32,7 @@ text = "Y"
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 min_value = 1.0
+max_value = 9999.0
 value = 1.0
 label = "int"
 control_state = 2

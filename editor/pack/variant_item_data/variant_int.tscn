@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://co0wntcy40css"]
 
-[ext_resource type="Script" uid="uid://bew6iokb36crl" path="res://addons/inventorykernel/editor/pack/set_variant/script/variant_int.gd" id="1_ttu13"]
+[ext_resource type="Script" uid="uid://bew6iokb36crl" path="res://addons/inventorykernel/editor/pack/variant_item_data/script/variant_int.gd" id="1_ttu13"]
 
 [node name="variant_int" type="HBoxContainer" unique_id=2134623032]
 size_flags_horizontal = 3
@@ -13,5 +13,7 @@ text = "Null: "
 [node name="num" type="EditorSpinSlider" parent="." unique_id=2083193709]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+max_value = 9999.0
 label = "int"
-control_state = 1
+control_state = 2
+hide_slider = true
