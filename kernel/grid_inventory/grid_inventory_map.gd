@@ -9,7 +9,7 @@ func _ready() -> void:
 	if not Engine.is_editor_hint():
 		_create_cells_divination()
 		
-func create_item(item_name: String, set_quantity: int, write_cache: Dictionary = {}):
+func create_item_for_name(item_name: String, set_quantity: int, write_cache: Dictionary = {}):
 	var get_item_data: GridItemData = item_data_list.get_item_resource(item_name)
 
 	if get_item_data == null:
@@ -25,7 +25,20 @@ func create_item(item_name: String, set_quantity: int, write_cache: Dictionary =
 	
 	if quantity_left > 0:
 		_create_grid_item(item_name, quantity_left, write_cache)
-		
+
+
+func create_item_for_resource(item_data: GridItemData, set_quantity: int, write_cache: Dictionary = {}):
+	var math: int = set_quantity / item_data.stack_size
+	var quantity_left: int = set_quantity
+	
+	for i in range(math):
+		_create_grid_item(item_data.item_name, item_data.stack_size, write_cache)
+		quantity_left -= item_data.stack_size
+	
+	if quantity_left > 0:
+		_create_grid_item(item_data.item_name, quantity_left, write_cache)
+
+
 func create_item_base(data: GridItemData, quantity: int, i_size: Vector2i, i_position: Vector2, i_rorated: bool):
 	_create_grid_item_base(data, i_position, i_size, quantity, i_rorated)
 
