@@ -27,7 +27,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 theme_override_font_sizes/italics_font_size = 32
 bbcode_enabled = true
-text = "[fade start=1 length=40][i]Inventory-Kernel"
+text = "[fade start=1 length=40][i]Inventory-driver"
 fit_content = true
 autowrap_mode = 1
 horizontal_alignment = 1
@@ -144,6 +144,13 @@ text = "ItemDB"
 [node name="HSeparator2" type="HSeparator" parent="MES/TabContainer/ItemDB/VBoxContainer" unique_id=645028420]
 layout_mode = 2
 
+[node name="itemdb_res" type="EditorResourcePicker" parent="MES/TabContainer/ItemDB/VBoxContainer" unique_id=317435591]
+custom_minimum_size = Vector2(200.852, 35.83)
+clip_contents = true
+layout_mode = 2
+size_flags_horizontal = 4
+base_type = "ItemDB"
+
 [node name="HBoxContainer" type="HBoxContainer" parent="MES/TabContainer/ItemDB/VBoxContainer" unique_id=2031668386]
 layout_mode = 2
 alignment = 1
@@ -152,7 +159,13 @@ alignment = 1
 layout_mode = 2
 text = "Create ItemDB"
 
+[node name="rebuild_db" type="Button" parent="MES/TabContainer/ItemDB/VBoxContainer/HBoxContainer" unique_id=548648353]
+visible = false
+layout_mode = 2
+text = "Re-build ItemDB"
+
 [node name="join_item" type="Button" parent="MES/TabContainer/ItemDB/VBoxContainer/HBoxContainer" unique_id=1406723475]
+visible = false
 layout_mode = 2
 text = "Join item"
 
@@ -165,6 +178,10 @@ size_flags_vertical = 3
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+
+[node name="EditorFileDialog" type="EditorFileDialog" parent="MES/TabContainer/ItemDB" unique_id=723664865]
+title = "Save ItemDB"
+filters = PackedStringArray("*.tres", "*.res")
 
 [node name="API" type="TabBar" parent="MES/TabContainer" unique_id=495837967]
 visible = false
@@ -179,5 +196,8 @@ metadata/_tab_index = 4
 [connection signal="resource_changed" from="MES/TabContainer/ItemData/VBoxContainer/resource_selecter" to="MES/TabContainer/ItemData" method="_on_resource_changed"]
 [connection signal="pressed" from="MES/TabContainer/ItemData/VBoxContainer/HBoxContainer/Button" to="MES/TabContainer/ItemData" method="_on_save_button_pressed"]
 [connection signal="file_selected" from="MES/TabContainer/ItemData/VBoxContainer/HBoxContainer/EditorFileDialog" to="MES/TabContainer/ItemData" method="_on_editor_dialog_file_selected"]
+[connection signal="resource_changed" from="MES/TabContainer/ItemDB/VBoxContainer/itemdb_res" to="MES/TabContainer/ItemDB" method="_on_itemdb_resource_selected"]
 [connection signal="pressed" from="MES/TabContainer/ItemDB/VBoxContainer/HBoxContainer/create_db" to="MES/TabContainer/ItemDB" method="_on_create_db_pressed"]
+[connection signal="pressed" from="MES/TabContainer/ItemDB/VBoxContainer/HBoxContainer/rebuild_db" to="MES/TabContainer/ItemDB" method="_on_rebuild_db_pressed"]
 [connection signal="pressed" from="MES/TabContainer/ItemDB/VBoxContainer/HBoxContainer/join_item" to="MES/TabContainer/ItemDB" method="_on_join_item_pressed"]
+[connection signal="file_selected" from="MES/TabContainer/ItemDB/EditorFileDialog" to="MES/TabContainer/ItemDB" method="_on_editor_file_selected"]

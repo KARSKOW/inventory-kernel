@@ -13,7 +13,7 @@ signal is_inventory_change(item: Node)
 		
 @export var map_choosing_texture: Texture2D
 		
-@export var item_data_list: GridInventoryItemList
+@export var item_db: ItemDB
 @export var item_package: PackedScene
 
 @export_group("Cell setting")
@@ -56,7 +56,7 @@ func _can_place_on_grid(pos: Vector2i, item_size: Vector2i):
 	return _is_cells_empty(pos, item_size)
 
 func _create_grid_item(item_name: String, set_quantity: int, write_cache: Dictionary = {}):
-	var get_item_data: GridItemData = item_data_list.get_item_resource(item_name)
+	var get_item_data: GridItemData = item_db.get_library_item(item_name)
 	if get_item_data == null:
 		print_rich("[color=red] [ERROR][/color]", " Can't found this item: ", item_name)
 		inventory_overflow_item.emit([item_name, set_quantity])
@@ -94,6 +94,9 @@ func _create_grid_item(item_name: String, set_quantity: int, write_cache: Dictio
 		false, 
 		write_cache
 		)
+
+func _final_create_item():
+	pass
 
 func _create_grid_item_base(data: GridItemData, i_position: Vector2, i_size: Vector2i, quantity: int, is_rotated: bool, write_cache: Dictionary = {}):
 	if data == null:
@@ -133,7 +136,6 @@ func _read_snapshot(read_resource: Array) -> void:
 			if port_cache == null:
 				continue
 			_create_grid_item_base(port_data, port_position, port_data.item_size, port_quantity, port_is_rotated, port_cache)
-	
 
 func _add_item_to_grid(c_position: Vector2, grid_pos: Vector2i, c_size: Vector2i, item_data: GridItemData, quantity: int, is_rotated: bool = false, write_cache: Dictionary = {}) -> void:
 	var inter_item: GridInventoryItem = item_package.instantiate()
@@ -153,15 +155,15 @@ func _add_item_to_grid(c_position: Vector2, grid_pos: Vector2i, c_size: Vector2i
 	inter_item._update_item_data()
 	inter_item.mouse_entered_item_rect.connect(_is_mouse_entered_item)
 	inter_item.mouse_exited_item_rect.connect(_is_mouse_exited_item)
-	_set_cells_divination(grid_pos, inter_item.item_size, inter_item)
+	_set_cells_occupy(grid_pos, inter_item.item_size, inter_item)
 
-func _math_top_left(math_px: Vector2, item_size: Vector2i) -> Vector2i:
+func _compute_top_left(math_px: Vector2, item_size: Vector2i) -> Vector2i:
 	var math_size = Vector2(item_size) * 0.5
 	var math_grid_index = (math_px / cell_size) - math_size
 	var math_pos_px = Vector2i(round(math_grid_index.x), round(math_grid_index.y))
 	return math_pos_px
 
-func _create_cells_divination() -> void:
+func _create_cells_occupy() -> void:
 	for y in range(map_index.y):
 		var y_cell = []
 		for x in range(map_index.x):
@@ -175,7 +177,7 @@ func _update_cells_panel() -> void:
 	queue_redraw()
 
 func _scan_item_rect(px: Vector2, area: Vector2i):
-	var top_left = _math_top_left(px, area)
+	var top_left = _compute_top_left(px, area)
 	var item_found = []
 
 	for y in range(area.y):
@@ -205,7 +207,7 @@ func _is_cells_empty(pos: Vector2i, item: Vector2i) -> bool:
 	return true
 
 func _is_within_bounds(px: Vector2, g_size: Vector2i) -> bool:
-	var top_left_index = _math_top_left(px, g_size)
+	var top_left_index = _compute_top_left(px, g_size)
 	var math_bottom_right = top_left_index + g_size - Vector2i(1, 1)
 	
 	if top_left_index.x >= 0 and top_left_index.y >= 0 \
@@ -215,12 +217,12 @@ func _is_within_bounds(px: Vector2, g_size: Vector2i) -> bool:
 	else:
 		return false
 
-func _set_cells_divination(start_vec: Vector2i, item_size: Vector2i, divination: Variant) -> void:
+func _set_cells_occupy(start_vec: Vector2i, item_size: Vector2i, set_occupy: Variant) -> void:
 	for y in range(item_size.y):
 		for x in range(item_size.x):
-			cells_occupy[start_vec.y + y][start_vec.x + x] = divination
+			cells_occupy[start_vec.y + y][start_vec.x + x] = set_occupy
 
-func _get_cells_divination(start_vec: Vector2i, item_size: Vector2i):
+func _get_cells_occupy(start_vec: Vector2i, item_size: Vector2i):
 	for y in range(item_size.y):
 		for x in range(item_size.x):
 			var gy = start_vec.y + y
@@ -233,7 +235,7 @@ func _get_cells_divination(start_vec: Vector2i, item_size: Vector2i):
 
 func _preview_selecter(mouse_px: Vector2, chooise_size: Vector2i) -> void:
 	var math_size = Vector2(chooise_size) * 0.5
-	var top_left_index = _math_top_left(mouse_px, chooise_size)
+	var top_left_index = _compute_top_left(mouse_px, chooise_size)
 	var px = (Vector2(top_left_index) + math_size) * cell_size
 	
 	if _is_within_bounds(mouse_px, chooise_size):

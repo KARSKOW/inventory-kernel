@@ -7,10 +7,10 @@ var inventory_item_data_tree = []
 func _ready() -> void:
 	super._ready()
 	if not Engine.is_editor_hint():
-		_create_cells_divination()
+		_create_cells_occupy()
 		
 func create_item_for_name(item_name: String, set_quantity: int, write_cache: Dictionary = {}):
-	var get_item_data: GridItemData = item_data_list.get_item_resource(item_name)
+	var get_item_data: GridItemData = item_db.get_library_item(item_name)
 
 	if get_item_data == null:
 		print("Can't found this item: ", item_name)
@@ -49,16 +49,16 @@ func clear_all_items(use_free: bool = true):
 		else:
 			remove_child(item)
 	cells_occupy = []
-	_create_cells_divination()
+	_create_cells_occupy()
 
 func clear_item(item: GridInventoryItem):
-	_tar_clean_item_divination(item)
+	_tar_clean_item_occupy(item)
 	item.queue_free()
 	
-func clear_item_from_cursor(set_divination: bool = true) -> void:
-	if set_divination == true and mouse_selection != null:
+func clear_item_from_cursor(set_occupy: bool = true) -> void:
+	if set_occupy == true and mouse_selection != null:
 		mouse_selection.queue_free()
-		_tar_clean_item_divination(mouse_selection)
+		_tar_clean_item_occupy(mouse_selection)
 
 func can_add_inventory(i_size: Vector2i) -> bool:
 	if _scan_inventory_cells_empty(i_size) == Vector2i(-1, -1):
@@ -98,7 +98,7 @@ func has_item_name(target_name: String) -> bool:
 	return false
 
 func addition_item(target_name: String, add_quantity: int, write_cache: Dictionary = {}):
-	var addition_item_data: GridItemData = item_data_list.get_item_resource(target_name)
+	var addition_item_data: GridItemData = item_db.get_library_item(target_name)
 	if addition_item_data == null:
 		return
 
@@ -123,7 +123,7 @@ func addition_item(target_name: String, add_quantity: int, write_cache: Dictiona
 			_create_grid_item(addition_item_data.item_name, quantity_left, write_cache)
 
 func subtract_item(target_name: String, sub_quantity: int):
-	var subtract_item_data: GridItemData = item_data_list.get_item_resource(target_name)
+	var subtract_item_data: GridItemData = item_db.get_library_item(target_name)
 	var get_currect_item: Array[GridInventoryItem]
 	var quantity_left: int = sub_quantity
 	if subtract_item_data == null:
@@ -145,7 +145,7 @@ func subtract_item(target_name: String, sub_quantity: int):
 		item.quantity -= get_min_quantity
 		quantity_left -= get_min_quantity
 		if item.quantity <= 0:
-			_clean_item_divination(Vector2i(item.position / item.item_cell_size), item.item_size)
+			_clean_item_occupy(Vector2i(item.position / item.item_cell_size), item.item_size)
 			item.queue_free()
 
 	if quantity_left <= 0:
@@ -160,7 +160,7 @@ func subtract_item(target_name: String, sub_quantity: int):
 		item.quantity -= get_min_quantity
 		quantity_left -= get_min_quantity
 		if item.quantity <= 0:
-			_clean_item_divination(Vector2i(item.position / item.item_cell_size), item.item_size)
+			_clean_item_occupy(Vector2i(item.position / item.item_cell_size), item.item_size)
 			item.queue_free()
 
 
@@ -170,7 +170,7 @@ func sorted_item():
 	for item: GridInventoryItem in get_children():
 		sort_collect.append(item)
 
-	_clean_item_divination(Vector2i.ZERO, map_index)
+	_clean_item_occupy(Vector2i.ZERO, map_index)
 	
 	if sort_collect.size() <= 0:
 		return
@@ -182,7 +182,7 @@ func sorted_item():
 		var set_top_left = Vector2(get_top_left) * cell_size
 		if get_top_left != Vector2i(-1, -1):
 			item.position = set_top_left
-			_added_item_divination(get_top_left, item.item_size, item)
+			_added_item_occupy(get_top_left, item.item_size, item)
 
 func _scan_inventory_cells_empty(item_size: Vector2i, rotated_scan: bool = false) -> Vector2i:
 	if rotated_scan == false:
@@ -195,10 +195,10 @@ func get_item(is_children: bool) -> Array:
 		
 	return [get_child(-1)]
 
-func set_item_divination_map(set_map: Array) -> void:
+func set_item_occupy_map(set_map: Array) -> void:
 	cells_occupy = set_map
 	
-func get_item_divination_map() -> Array:
+func get_item_occupy_map() -> Array:
 	return cells_occupy
 
 func _is_item_stack_full(target_item: GridInventoryItem) -> bool:
@@ -220,15 +220,15 @@ func _drag_half_item(selection: GridInventoryItem):
 	selection.quantity -= compute_half
 	return compute_half
 
-func _clean_item_divination(up_left: Vector2i, item_size: Vector2i):
-	_set_cells_divination(up_left, item_size, null)
+func _clean_item_occupy(up_left: Vector2i, item_size: Vector2i):
+	_set_cells_occupy(up_left, item_size, null)
 	
-func _tar_clean_item_divination(clean_target: GridInventoryItem):
+func _tar_clean_item_occupy(clean_target: GridInventoryItem):
 	var get_top_left = Vector2i(clean_target.position / clean_target.item_cell_size)
-	_clean_item_divination(get_top_left, clean_target.item_size)
+	_clean_item_occupy(get_top_left, clean_target.item_size)
 
-func _added_item_divination(up_left: Vector2i, item_size: Vector2i, get_item: Variant):
-	_set_cells_divination(up_left, item_size, get_item)
+func _added_item_occupy(up_left: Vector2i, item_size: Vector2i, get_item: Variant):
+	_set_cells_occupy(up_left, item_size, get_item)
 
 func connection_item_selection():
 	for item: GridInventoryItem in get_children():

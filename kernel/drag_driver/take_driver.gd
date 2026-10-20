@@ -78,7 +78,7 @@ func dragging():
 		last_drop_item = top_left
 		last_drop_rotate = get_item_selection.is_rotated
 		last_drop_origin = null
-		mouse_entered_inventory._clean_item_divination(top_left, get_item_selection.item_size)
+		mouse_entered_inventory._clean_item_occupy(top_left, get_item_selection.item_size)
 	else:
 		last_drop_origin = mouse_select_equip
 	holding_item(mouse_entered_inventory.mouse_selection)
@@ -89,7 +89,7 @@ func dropped():
 		var get_item = get_dragging_item()
 		var mouse_position = mouse_entered_inventory.get_local_mouse_position()
 		var top_left = _math_top_left(mouse_position, get_item.item_size, get_item.item_cell_size)
-		mouse_entered_inventory._added_item_divination(top_left, get_item.item_size, get_item)
+		mouse_entered_inventory._added_item_occupy(top_left, get_item.item_size, get_item)
 		get_item.global_position = Vector2(top_left) * get_item.item_cell_size
 		dropped_item(mouse_entered_inventory)
 		mouse_entered_inventory.connection_item_selection()
@@ -109,7 +109,7 @@ func dropped_equip():
 			if new_spot != Vector2i(-1, -1):
 				existing_item.reparent(mouse_entered_inventory, false)
 				existing_item.position = Vector2(new_spot) * existing_item.item_cell_size
-				mouse_entered_inventory._added_item_divination(new_spot, existing_item.item_size, existing_item)
+				mouse_entered_inventory._added_item_occupy(new_spot, existing_item.item_size, existing_item)
 			else:
 				mouse_select_equip = null
 				revoked()
@@ -130,11 +130,11 @@ func revoked():
 			dropped_item(last_drop_origin)
 		else:
 			var top_left = last_drop_item
-			if mouse_entered_inventory._get_cells_divination(last_drop_item, get_item.item_size):
+			if mouse_entered_inventory._get_cells_occupy(last_drop_item, get_item.item_size):
 				get_item.global_position = Vector2(top_left) * get_item.item_cell_size
 				get_item.is_rotated = last_drop_rotate
 				get_item.set_rotated()
-				mouse_entered_inventory._added_item_divination(top_left, get_item.item_size, get_item)
+				mouse_entered_inventory._added_item_occupy(top_left, get_item.item_size, get_item)
 				dropped_item(mouse_entered_inventory)
 				mouse_entered_inventory.connection_item_selection()
 			else:
@@ -144,7 +144,7 @@ func revoked():
 				get_item.global_position = Vector2(get_top_left) * get_item.item_cell_size
 				get_item.is_rotated = last_drop_rotate
 				get_item.set_rotated()
-				mouse_entered_inventory._added_item_divination(get_top_left, get_item.item_size, get_item)
+				mouse_entered_inventory._added_item_occupy(get_top_left, get_item.item_size, get_item)
 				dropped_item(mouse_entered_inventory)
 				mouse_entered_inventory.connection_item_selection()
 	print("REVOKE ITEM")
@@ -155,19 +155,19 @@ func exchange(mouse_px):
 	var drag_top_left = _math_top_left(mouse_px, dragged_item.item_size, dragged_item.item_cell_size)
 	
 	if target_item != null:
-		mouse_entered_inventory._clean_item_divination(target_old_pos, target_item.item_size)
-		mouse_entered_inventory._added_item_divination(drag_top_left, dragged_item.item_size, dragged_item)
+		mouse_entered_inventory._clean_item_occupy(target_old_pos, target_item.item_size)
+		mouse_entered_inventory._added_item_occupy(drag_top_left, dragged_item.item_size, dragged_item)
 		dragged_item.global_position = Vector2(drag_top_left) * dragged_item.item_cell_size
 		
 		var new_spot = mouse_entered_inventory._scan_cells_ract_empty(target_item.item_size)
 		if new_spot != Vector2i(-1, -1):
 			target_item.position = Vector2(new_spot) * target_item.item_cell_size
-			mouse_entered_inventory._added_item_divination(new_spot, target_item.item_size, target_item)
+			mouse_entered_inventory._added_item_occupy(new_spot, target_item.item_size, target_item)
 			dropped_item(mouse_entered_inventory)
 			mouse_entered_inventory.connection_item_selection()
 		else:
-			mouse_entered_inventory._clean_item_divination(drag_top_left, dragged_item.item_size)
-			mouse_entered_inventory._added_item_divination(target_old_pos, target_item.item_size, target_item)
+			mouse_entered_inventory._clean_item_occupy(drag_top_left, dragged_item.item_size)
+			mouse_entered_inventory._added_item_occupy(target_old_pos, target_item.item_size, target_item)
 			revoked()
 
 
