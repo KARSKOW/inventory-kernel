@@ -80,23 +80,24 @@ func _overwrite_file():
 	if selected_resource == null:
 		push_error("[rebuild-db] No ItemDB selected.")
 		return
-
-	var copy_library: Dictionary = selected_resource.item_library.duplicate()
+	
+	var copy_library = selected_resource.item_library.duplicate()
+	var new_library: Dictionary = {}
 	for i in candidate_item_list.get_children():
 		if i.picker_resource == null:
+			i.is_mark_repeat = false
 			printt("[rebuild-db]", "No resource.", "[ SKIP ]")
 		else:
 			if copy_library.has(i.picker_resource.item_name):
-				i.is_mark_skip = true
-				printt("[rebuild-db]", i.picker_resource.item_name, "[ SKIP ]")
+				i.is_mark_repeat = true
+				new_library[i.picker_resource.item_name] = i.picker_resource
+				printt("[rebuild-db]", i.picker_resource.item_name, "[ REPEAT ]")
 			else:
-				copy_library[i.picker_resource.item_name] = i.picker_resource
+				new_library[i.picker_resource.item_name] = i.picker_resource
 				printt("[rebuild-db]", i.picker_resource.item_name)
 
-	selected_resource.item_library = copy_library
+	selected_resource.item_library = new_library
 
-	# Rebuild saves back to the selected resource's own file. `file_path` is
-	# only a fallback because it can be left over from a previous creation.
 	var path := selected_resource.resource_path
 	if path.is_empty():
 		path = file_path
@@ -114,8 +115,7 @@ func _overwrite_file():
 
 
 func _on_create_db_pressed() -> void:
-	# The create button is only visible when no ItemDB is selected. Ask for a
-	# destination path first; _on_editor_file_selected() creates the file.
+
 	editor_file_dialog.popup_file_dialog()
 	
 
@@ -126,11 +126,12 @@ func _on_rebuild_db_pressed() -> void:
 func _on_join_item_pressed() -> void:
 	var set_candidate_item = UI_CANDIDATE_ITEM.instantiate()
 	candidate_item_list.add_child(set_candidate_item)
-	set_candidate_item.is_mark_skip = false
 
 func _on_editor_file_selected(path: String) -> void:
 	file_path = path
 	_create_new_file()
+	itemdb_res.edited_resource = load(path)
+	selected_resource = load(path)
 	printt("[creating-db]", "Saved:", file_path)
 
 

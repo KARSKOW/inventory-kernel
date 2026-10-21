@@ -1,13 +1,15 @@
 @tool
 extends HBoxContainer
 
-@onready var label: RichTextLabel = $Label
+@onready var repeat: RichTextLabel = $repeat
+
 @onready var editor_resource_picker: EditorResourcePicker = $EditorResourcePicker
 
-var is_mark_skip: bool = false:
+
+var is_mark_repeat: bool = false:
 	set(value):
-		is_mark_skip = value
-		label.visible = is_mark_skip
+		is_mark_repeat = value
+		repeat.visible = is_mark_repeat
 
 var picker_resource: Resource
 

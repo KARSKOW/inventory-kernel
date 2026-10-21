@@ -96,6 +96,7 @@ func _on_save_button_pressed() -> void:
 	if selecter_resource == null:
 		print_rich("[color=yellow]","[savfile] NIL return: You must select resource template.")
 		return
+	editor_file_dialog.current_file = get_tools_all_variant()["item_name"] + ".tres"
 	editor_file_dialog.popup_file_dialog()
 
 
