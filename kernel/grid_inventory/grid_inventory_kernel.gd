@@ -246,7 +246,9 @@ func _add_target_cells(target_vec: Vector2i) -> void:
 
 func scan_can_place_cells(item_size: Vector2i):
 	var get_cells_non_occupy_list = cells_non_occupy_list.keys()
-	#get_cells_non_occupy_list.sort()
+	var lambda = func(a: Vector2i, b: Vector2i): return a.y < b.y if a.y != b.y else a.x < b.x
+	get_cells_non_occupy_list.sort_custom(lambda)
+	print(get_cells_non_occupy_list)
 	
 	for i in get_cells_non_occupy_list:
 		if _is_cells_empty(i, item_size):
@@ -256,6 +258,15 @@ func scan_can_place_cells(item_size: Vector2i):
 
 
 func _is_cells_empty(start_pos: Vector2i, item_size: Vector2i) -> bool:
+	if start_pos.x < 0 or start_pos.y < 0:
+		return false
+		
+	if start_pos.x + item_size.x > map_index.x:
+		return false
+		
+	if start_pos.y + item_size.y > map_index.y:
+		return false
+		
 	for rect_x in range(item_size.x):
 		for rect_y in range(item_size.y):
 			if cells_occupy_data[start_pos.y + rect_y][start_pos.x + rect_x] != null:
