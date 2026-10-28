@@ -7,7 +7,8 @@ var inventory_item_data_tree = []
 func _ready() -> void:
 	super._ready()
 	if not Engine.is_editor_hint():
-		_create_cells_occupy()
+		_create_cells_data()
+		_create_cells_empty_list()
 		
 func create_item_for_name(item_name: String, set_quantity: int, write_cache: Dictionary = {}):
 	var get_item_data: GridItemData = item_db.get_library_item(item_name)
@@ -48,8 +49,8 @@ func clear_all_items(use_free: bool = true):
 			item.queue_free()
 		else:
 			remove_child(item)
-	cells_occupy = []
-	_create_cells_occupy()
+	cells_occupy_data = []
+	_create_cells_data()
 
 func clear_item(item: GridInventoryItem):
 	_tar_clean_item_occupy(item)
@@ -178,7 +179,7 @@ func sorted_item():
 	sort_collect.sort_custom(_sort_item_custom)
 	
 	for item: GridInventoryItem in sort_collect:
-		var get_top_left = _scan_cells_ract_empty(item.item_size)
+		var get_top_left = scan_can_place_cells(item.item_size)
 		var set_top_left = Vector2(get_top_left) * cell_size
 		if get_top_left != Vector2i(-1, -1):
 			item.position = set_top_left
@@ -186,8 +187,8 @@ func sorted_item():
 
 func _scan_inventory_cells_empty(item_size: Vector2i, rotated_scan: bool = false) -> Vector2i:
 	if rotated_scan == false:
-		return _scan_cells_ract_empty(item_size)
-	return _scan_cells_ract_empty(Vector2i(item_size.y, item_size.x))
+		return scan_can_place_cells(item_size)
+	return scan_can_place_cells(Vector2i(item_size.y, item_size.x))
 
 func get_item(is_children: bool) -> Array:
 	if is_children == true:
@@ -195,11 +196,11 @@ func get_item(is_children: bool) -> Array:
 		
 	return [get_child(-1)]
 
-func set_item_occupy_map(set_map: Array) -> void:
-	cells_occupy = set_map
+func set_item_occupy_map(set_map: PackedInt32Array) -> void:
+	cells_occupy_data = set_map
 	
-func get_item_occupy_map() -> Array:
-	return cells_occupy
+func get_item_occupy_map() -> PackedInt32Array:
+	return cells_occupy_data
 
 func _is_item_stack_full(target_item: GridInventoryItem) -> bool:
 	return target_item.quantity >= target_item.item_database.get_stack_size()

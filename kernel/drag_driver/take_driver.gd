@@ -105,7 +105,7 @@ func dropped_equip():
 	if mouse_select_equip.get_child_count() > 0:
 		var existing_item = mouse_select_equip.get_child(0)
 		if existing_item is GridInventoryItem and (get_dragging_item_type == get_equippment_type):
-			var new_spot = mouse_entered_inventory._scan_cells_ract_empty(existing_item.item_size)
+			var new_spot = mouse_entered_inventory._scan_ract_empty(existing_item.item_size)
 			if new_spot != Vector2i(-1, -1):
 				existing_item.reparent(mouse_entered_inventory, false)
 				existing_item.position = Vector2(new_spot) * existing_item.item_cell_size
@@ -138,7 +138,7 @@ func revoked():
 				dropped_item(mouse_entered_inventory)
 				mouse_entered_inventory.connection_item_selection()
 			else:
-				var get_top_left = mouse_entered_inventory._scan_cells_ract_empty(get_item.item_size)
+				var get_top_left = mouse_entered_inventory._scan_ract_empty(get_item.item_size)
 				if get_top_left == Vector2i(-1, -1):
 					return
 				get_item.global_position = Vector2(get_top_left) * get_item.item_cell_size
@@ -159,7 +159,7 @@ func exchange(mouse_px):
 		mouse_entered_inventory._added_item_occupy(drag_top_left, dragged_item.item_size, dragged_item)
 		dragged_item.global_position = Vector2(drag_top_left) * dragged_item.item_cell_size
 		
-		var new_spot = mouse_entered_inventory._scan_cells_ract_empty(target_item.item_size)
+		var new_spot = mouse_entered_inventory._scan_ract_empty(target_item.item_size)
 		if new_spot != Vector2i(-1, -1):
 			target_item.position = Vector2(new_spot) * target_item.item_cell_size
 			mouse_entered_inventory._added_item_occupy(new_spot, target_item.item_size, target_item)
