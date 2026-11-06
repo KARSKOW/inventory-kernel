@@ -3,7 +3,7 @@ extends TabBar
 
 @onready var variant_list: VBoxContainer = $VBoxContainer/variant_list/VBoxContainer
 @onready var resource_selecter: EditorResourcePicker = $VBoxContainer/resource_selecter
-@onready var editor_file_dialog: EditorFileDialog = $VBoxContainer/HBoxContainer/EditorFileDialog
+@onready var editor_file_dialog: EditorFileDialog = $"../../../EditorFileDialog"
 
 const VARIANT_IMAGE = preload("uid://bjn7nrwx2a2p3")
 const VARIANT_STRING = preload("uid://bng6tkywrl1gc")
@@ -11,6 +11,10 @@ const VARIANT_VEC_2_INT = preload("uid://bi807ijemasdr")
 const VARIANT_INT = preload("uid://co0wntcy40css")
 
 var selecter_resource
+
+func _ready() -> void:
+	if not editor_file_dialog.file_selected.is_connected(_on_editor_dialog_file_selected):
+		editor_file_dialog.file_selected.connect(_on_editor_dialog_file_selected)
 
 func refresh_resource_selecter() -> void:
 	if not is_node_ready():
@@ -97,6 +101,7 @@ func _on_save_button_pressed() -> void:
 		print_rich("[color=yellow]","[savfile] NIL return: You must select resource template.")
 		return
 	editor_file_dialog.current_file = get_tools_all_variant()["item_name"] + ".tres"
+	editor_file_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
 	editor_file_dialog.popup_file_dialog()
 
 

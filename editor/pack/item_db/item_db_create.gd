@@ -2,7 +2,7 @@
 extends TabBar
 
 @onready var candidate_item_list: VBoxContainer = $VBoxContainer/ScrollContainer/VBoxContainer
-@onready var editor_file_dialog: EditorFileDialog = $EditorFileDialog
+@onready var editor_file_dialog: EditorFileDialog = $"../../../EditorFileDialog"
 @onready var itemdb_res: EditorResourcePicker = $VBoxContainer/itemdb_res
 
 @onready var create_db_button: Button = $VBoxContainer/HBoxContainer/create_db
@@ -21,7 +21,8 @@ var selected_resource: ItemDB:
 		_set_itemdb()
 
 func _ready() -> void:
-	editor_file_dialog.file_mode = EditorFileDialog.FILE_MODE_SAVE_FILE
+	if not editor_file_dialog.file_selected.is_connected(_on_editor_file_selected):
+		editor_file_dialog.file_selected.connect(_on_editor_file_selected)
 	_set_itemdb()
 	join_item_button.visible = false
 
@@ -115,7 +116,7 @@ func _overwrite_file():
 
 
 func _on_create_db_pressed() -> void:
-
+	editor_file_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
 	editor_file_dialog.popup_file_dialog()
 	
 

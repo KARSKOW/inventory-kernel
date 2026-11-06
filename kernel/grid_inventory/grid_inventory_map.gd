@@ -1,5 +1,6 @@
 @tool
 extends GridInventoryKernel
+
 class_name GridInventoryMap
 
 var inventory_item_data_tree = []
@@ -21,11 +22,11 @@ func create_item_for_name(item_name: String, set_quantity: int, write_cache: Dic
 	var quantity_left: int = set_quantity
 	
 	for i in range(math):
-		_create_grid_item(item_name, get_item_data.stack_size, write_cache)
+		create_grid_item(item_name, get_item_data.stack_size, write_cache)
 		quantity_left -= get_item_data.stack_size
 	
 	if quantity_left > 0:
-		_create_grid_item(item_name, quantity_left, write_cache)
+		create_grid_item(item_name, quantity_left, write_cache)
 
 
 func create_item_for_resource(item_data: GridItemData, set_quantity: int, write_cache: Dictionary = {}):
@@ -33,11 +34,11 @@ func create_item_for_resource(item_data: GridItemData, set_quantity: int, write_
 	var quantity_left: int = set_quantity
 	
 	for i in range(math):
-		_create_grid_item(item_data.item_name, item_data.stack_size, write_cache)
+		create_grid_item(item_data.item_name, item_data.stack_size, write_cache)
 		quantity_left -= item_data.stack_size
 	
 	if quantity_left > 0:
-		_create_grid_item(item_data.item_name, quantity_left, write_cache)
+		create_grid_item(item_data.item_name, quantity_left, write_cache)
 
 
 func create_item_base(data: GridItemData, quantity: int, i_size: Vector2i, i_position: Vector2, i_rorated: bool):
@@ -86,11 +87,11 @@ func stacked_item(target_item: GridInventoryItem, selection: GridInventoryItem) 
 		return target_item.quantity > 0
 
 func create_inventory_snapshot():
-	inventory_item_data_tree = _create_snapshot()
-	return _create_snapshot()
+	inventory_item_data_tree = create_snapshot()
+	return create_snapshot()
 	
 func read_inventory_snapshot(inventory_snapshot: Array):
-	_read_snapshot(inventory_snapshot)
+	read_snapshot(inventory_snapshot)
 
 func has_item_name(target_name: String) -> bool:
 	for i: GridInventoryItem in get_children():
@@ -118,10 +119,10 @@ func addition_item(target_name: String, add_quantity: int, write_cache: Dictiona
 	if quantity_left > 0:
 		var full_stacks: int = quantity_left / addition_item_data.stack_size
 		for i in range(full_stacks):
-			_create_grid_item(addition_item_data.item_name, addition_item_data.stack_size, write_cache)
+			create_grid_item(addition_item_data.item_name, addition_item_data.stack_size, write_cache)
 			quantity_left -= addition_item_data.stack_size
 		if quantity_left > 0:
-			_create_grid_item(addition_item_data.item_name, quantity_left, write_cache)
+			create_grid_item(addition_item_data.item_name, quantity_left, write_cache)
 
 func subtract_item(target_name: String, sub_quantity: int):
 	var subtract_item_data: GridItemData = item_db.get_library_item(target_name)
@@ -222,14 +223,14 @@ func _drag_half_item(selection: GridInventoryItem):
 	return compute_half
 
 func _clean_item_occupy(up_left: Vector2i, item_size: Vector2i):
-	_set_cells_occupy(up_left, item_size, null)
+	set_cells_occupy(up_left, item_size, null)
 	
 func _tar_clean_item_occupy(clean_target: GridInventoryItem):
 	var get_top_left = Vector2i(clean_target.position / clean_target.item_cell_size)
 	_clean_item_occupy(get_top_left, clean_target.item_size)
 
 func _added_item_occupy(up_left: Vector2i, item_size: Vector2i, get_item: Variant):
-	_set_cells_occupy(up_left, item_size, get_item)
+	set_cells_occupy(up_left, item_size, get_item)
 
 func connection_item_selection():
 	for item: GridInventoryItem in get_children():

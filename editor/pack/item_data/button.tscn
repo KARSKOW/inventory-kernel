@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://fhxewfgs487r"]
 
-[ext_resource type="Script" uid="uid://br26b6ybngfwg" path="res://addons/inventorykernel/editor/pack/create_item_data/button.gd" id="1_xvijj"]
+[ext_resource type="Script" uid="uid://br26b6ybngfwg" path="res://addons/inventorykernel/editor/pack/item_data/button.gd" id="1_xvijj"]
 
 [node name="Button" type="Button" unique_id=1091650076]
 text = "Grid 
