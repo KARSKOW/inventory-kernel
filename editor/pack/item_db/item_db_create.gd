@@ -2,7 +2,7 @@
 extends TabBar
 
 @onready var candidate_item_list: VBoxContainer = $VBoxContainer/ScrollContainer/VBoxContainer
-@onready var editor_file_dialog: EditorFileDialog = $"../../../EditorFileDialog"
+@onready var editor_file_dialog: EditorFileDialog = $"../../../ItemDBFileDialog"
 @onready var itemdb_res: EditorResourcePicker = $VBoxContainer/itemdb_res
 
 @onready var create_db_button: Button = $VBoxContainer/HBoxContainer/create_db

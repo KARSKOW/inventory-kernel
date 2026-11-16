@@ -8,20 +8,17 @@ signal mouse_exited_item_rect()
 
 @export var item_cell_size: int
 
-var item_database: GridInventoryItemData
-
 @export_tool_button("update_size") var button: Callable = _update_size
 
 @export var texture_rect: TextureRect
 @export var quantity_text: Label
 @export var name_text: Label
 
+
+var item_database: GridInventoryItemData
+
 var item_size: Vector2i
 
-var quantity: int:
-	set(value):
-		quantity = value
-		_update_item_data()
 
 var is_rotated: bool:
 	set(value):
@@ -36,7 +33,7 @@ var item_exited_one_shoot: bool
 
 func _ready() -> void:
 	set_name("gridmap_item_1")
-	_update_item_data()
+	update_item_data()
 	
 func set_rotated():
 	if item_database == null:
@@ -47,7 +44,17 @@ func set_rotated():
 	else:
 		item_size = Vector2i(read_size)
 	_update_item_size()
-	
+
+func update_item_data():
+	if item_database != null and item_database.data != null:
+		if item_database.quantity > 1:
+			quantity_text.text = str(item_database.quantity)
+		else:
+			quantity_text.text = ""
+		
+		name_text.text = item_database.get_item_name()
+		texture_rect.texture = item_database.get_item_image()
+
 	
 func _is_mouse_entered_rect() -> bool:
 	if Rect2(Vector2.ZERO, size).has_point(get_local_mouse_position()):
@@ -57,19 +64,9 @@ func _is_mouse_entered_rect() -> bool:
 
 func _is_item_fulled():
 	if item_database != null:
-		return item_database.get_stack_size() <= quantity
+		return item_database.get_stack_size() <= item_database.quantity
 	return false
 
-func _update_item_data():
-	if item_database != null and item_database.data != null:
-		if quantity > 1:
-			quantity_text.text = str(quantity)
-		else:
-			quantity_text.text = ""
-		
-		name_text.text = item_database.get_item_name()
-		texture_rect.texture = item_database.get_item_image()
-			
 
 func _update_size():
 	if Engine.is_editor_hint():
@@ -97,6 +94,15 @@ func _update_rotate():
 	set_rotated()
 	
 	texture_rect.position = Vector2.ZERO
+
+func to_rotated():
+	texture_rect.offset_transform_enabled = true
+	if is_rotated == true:
+		size = item_database.get_item_size(true) * item_cell_size
+		texture_rect.offset_transform_rotation = deg_to_rad(90.0)
+		return
+	size = item_database.get_item_size() * item_cell_size
+	texture_rect.offset_transform_rotation = 0.0
 
 func _on_mouse_entered() -> void:
 	mouse_entered_item_rect.emit(self)

@@ -10,7 +10,13 @@ func _ready() -> void:
 	if not Engine.is_editor_hint():
 		_create_cells_data()
 		_create_cells_empty_list()
+		_connect_signal()
 		
+
+func _connect_signal():
+	mouse_entered.connect(func(): InventoryInterface.mouse_entered_inventory = self)
+	mouse_exited.connect(func(): InventoryInterface.mouse_entered_inventory = null)
+
 func create_item_for_name(item_name: String, set_quantity: int, write_cache: Dictionary = {}):
 	var get_item_data: GridItemData = item_db.get_library_item(item_name)
 
@@ -74,17 +80,17 @@ func stacked_item(target_item: GridInventoryItem, selection: GridInventoryItem) 
 		return false
 
 	var stack_max = selection.item_database.get_stack_size()
-	var math = target_item.quantity + selection.quantity
+	var math = target_item.item_database.quantity + selection.item_database.quantity
 
 	if math <= stack_max:
-		selection.quantity += target_item.quantity
+		selection.item_database.quantity += target_item.item_database.quantity
 		target_item.queue_free()
 		return false
 	else:
-		var space = stack_max - selection.quantity
-		selection.quantity += space
-		target_item.quantity -= space
-		return target_item.quantity > 0
+		var space = stack_max - selection.item_database.quantity
+		selection.item_database.quantity += space
+		target_item.item_database.quantity -= space
+		return target_item.item_database.quantity > 0
 
 func create_inventory_snapshot():
 	inventory_item_data_tree = create_snapshot()
@@ -108,10 +114,10 @@ func addition_item(target_name: String, add_quantity: int, write_cache: Dictiona
 
 	for item: GridInventoryItem in get_children():
 		if item.item_database.get_item_name() == target_name:
-			var math_stack_quantity = item.item_database.get_stack_size() - item.quantity
+			var math_stack_quantity = item.item_database.get_stack_size() - item.item_database.quantity
 			if math_stack_quantity > 0:
 				var get_min_quantity = mini(quantity_left, math_stack_quantity)
-				item.quantity += get_min_quantity
+				item.item_database.quantity += get_min_quantity
 				quantity_left -= get_min_quantity
 				if quantity_left <= 0:
 					return
@@ -143,10 +149,10 @@ func subtract_item(target_name: String, sub_quantity: int):
 			break
 		if item._is_item_fulled():
 			continue
-		var get_min_quantity = mini(quantity_left, item.quantity)
-		item.quantity -= get_min_quantity
+		var get_min_quantity = mini(quantity_left, item.item_database.quantity)
+		item.item_database.quantity -= get_min_quantity
 		quantity_left -= get_min_quantity
-		if item.quantity <= 0:
+		if item.item_database.quantity <= 0:
 			_clean_item_occupy(Vector2i(item.position / item.item_cell_size), item.item_size)
 			item.queue_free()
 
@@ -158,10 +164,10 @@ func subtract_item(target_name: String, sub_quantity: int):
 			break
 		if not item._is_item_fulled():
 			continue
-		var get_min_quantity = mini(quantity_left, item.quantity)
-		item.quantity -= get_min_quantity
+		var get_min_quantity = mini(quantity_left, item.item_database.quantity)
+		item.item_database.quantity -= get_min_quantity
 		quantity_left -= get_min_quantity
-		if item.quantity <= 0:
+		if item.item_database.quantity <= 0:
 			_clean_item_occupy(Vector2i(item.position / item.item_cell_size), item.item_size)
 			item.queue_free()
 
@@ -191,11 +197,8 @@ func _scan_inventory_cells_empty(item_size: Vector2i, rotated_scan: bool = false
 		return scan_can_place_cells(item_size)
 	return scan_can_place_cells(Vector2i(item_size.y, item_size.x))
 
-func get_item(is_children: bool) -> Array:
-	if is_children == true:
-		return get_children()
-		
-	return [get_child(-1)]
+func get_grid_item(target: Vector2i) -> GridInventoryItem:
+	return cells_occupy_data[target.y][target.x]
 
 func set_item_occupy_map(set_map: PackedInt32Array) -> void:
 	cells_occupy_data = set_map
@@ -204,7 +207,7 @@ func get_item_occupy_map() -> PackedInt32Array:
 	return cells_occupy_data
 
 func _is_item_stack_full(target_item: GridInventoryItem) -> bool:
-	return target_item.quantity >= target_item.item_database.get_stack_size()
+	return target_item.item_database.quantity >= target_item.item_database.get_stack_size()
 
 func _is_same_item_name(target_item: GridInventoryItem, selection: GridInventoryItem):
 	var get_selection_item_name: String = selection.item_database.get_item_name()
@@ -215,11 +218,11 @@ func _sort_item_custom(a: GridInventoryItem, b:GridInventoryItem):
 	if a.item_size != b.item_size:
 		return a.item_size > b.item_size
 	
-	return a.quantity > b.quantity
+	return a.item_database.quantity > b.item_database.quantity
 
 func _drag_half_item(selection: GridInventoryItem):
-	var compute_half = selection.quantity / 2
-	selection.quantity -= compute_half
+	var compute_half = selection.item_database.quantity / 2
+	selection.item_database.quantity -= compute_half
 	return compute_half
 
 func _clean_item_occupy(up_left: Vector2i, item_size: Vector2i):

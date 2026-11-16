@@ -156,7 +156,7 @@ func create_snapshot() -> Array:
 				continue
 			var create_config = {}
 			create_config["data"] = item.item_database.data
-			create_config["quantity"] = item.quantity
+			create_config["quantity"] = item.item_database.quantity
 			create_config["position"] = item.position
 			create_config["is_rotated"] = item.is_rotated
 			create_config["cache_storage"] = item.item_database.cache
@@ -198,6 +198,11 @@ func scan_can_place_cells(item_size: Vector2i):
 func set_cells_occupy(start_vec: Vector2i, item_size: Vector2i, set_occupy: Variant) -> void:
 	if cells_occupy_data.is_empty():
 		_create_cells_data()
+	#if start_vec.x < 0 or start_vec.y < 0:
+		#return
+		#
+	#if start_vec.x + item_size.x > map_index.x or start_vec.y + item_size.y > map_index.y:
+		#return
 
 	for y in range(item_size.y):
 		for x in range(item_size.x):
@@ -241,7 +246,6 @@ func _create_grid_item_base(data: GridItemData, i_position: Vector2, i_size: Vec
 func _add_item_to_grid(c_position: Vector2, grid_pos: Vector2i, c_size: Vector2i, item_data: GridItemData, quantity: int, is_rotated: bool = false, write_cache: Dictionary = {}) -> void:
 	var inter_item: GridInventoryItem = item_package.instantiate()
 	inter_item.position = c_position
-	inter_item.quantity = quantity
 
 	var layer_data := GridInventoryItemData.new()
 	layer_data.data = item_data
@@ -253,7 +257,7 @@ func _add_item_to_grid(c_position: Vector2, grid_pos: Vector2i, c_size: Vector2i
 	inter_item.is_rotated = is_rotated
 	self.add_child(inter_item)
 	inter_item._update_item_size()
-	inter_item._update_item_data()
+	inter_item.update_item_data()
 	inter_item.mouse_entered_item_rect.connect(_is_mouse_entered_item)
 	inter_item.mouse_exited_item_rect.connect(_is_mouse_exited_item)
 	set_cells_occupy(grid_pos, inter_item.item_size, inter_item)

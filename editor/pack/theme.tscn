@@ -180,7 +180,12 @@ size_flags_vertical = 3
 layout_mode = 2
 metadata/_tab_index = 3
 
-[node name="EditorFileDialog" type="EditorFileDialog" parent="." unique_id=1059860897]
+[node name="ItemDataFileDialog" type="EditorFileDialog" parent="." unique_id=1059860897]
+oversampling_override = 1.0
+position = Vector2i(0, 36)
+filters = PackedStringArray("*.tres", "*.res")
+
+[node name="ItemDBFileDialog" type="EditorFileDialog" parent="." unique_id=-1132918725]
 oversampling_override = 1.0
 position = Vector2i(0, 36)
 filters = PackedStringArray("*.tres", "*.res")

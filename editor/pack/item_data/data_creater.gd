@@ -3,7 +3,7 @@ extends TabBar
 
 @onready var variant_list: VBoxContainer = $VBoxContainer/variant_list/VBoxContainer
 @onready var resource_selecter: EditorResourcePicker = $VBoxContainer/resource_selecter
-@onready var editor_file_dialog: EditorFileDialog = $"../../../EditorFileDialog"
+@onready var editor_file_dialog: EditorFileDialog = $"../../../ItemDataFileDialog"
 
 const VARIANT_IMAGE = preload("uid://bjn7nrwx2a2p3")
 const VARIANT_STRING = preload("uid://bng6tkywrl1gc")
