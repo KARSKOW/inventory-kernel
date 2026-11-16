@@ -124,7 +124,10 @@ func _grab_revoked_item():
 	if revoked_source_item != null:
 		revoked_source_item.item_database.quantity += grabbing_item.item_database.quantity
 		revoked_source_item.update_item_data()
+		
 		grabbing_item.queue_free()
+		grabbing_item = null
+		
 		revoked_source_item = null
 		return
 		
