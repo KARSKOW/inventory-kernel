@@ -1,7 +1,8 @@
 @tool
 extends GridInventoryKernel
-
 class_name GridInventoryMap
+
+signal grab_input_event(event)
 
 var inventory_item_data_tree = []
 
@@ -57,6 +58,7 @@ func clear_all_items(use_free: bool = true):
 		else:
 			remove_child(item)
 	cells_occupy_data = []
+	cells_non_occupy_list.clear()
 	_create_cells_data()
 
 func clear_item(item: GridInventoryItem):
