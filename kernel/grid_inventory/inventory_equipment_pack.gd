@@ -9,7 +9,7 @@ signal weapons_equip_status(data: GridInventoryItemData)
 
 @export var slot_type: String
 
-var slot_equiped_item: GridInventoryItem
+var slot_equiped_item: GridItemExample
 var before_size_px: Vector2
 
 
@@ -17,7 +17,7 @@ func _ready() -> void:
 	before_size_px = self.custom_minimum_size
 
 
-func get_equipment_item() -> GridInventoryItem:
+func get_equipment_item() -> GridItemExample:
 	if slot_equiped_item != null:
 		return slot_equiped_item
 	
@@ -42,7 +42,7 @@ func _on_mouse_exited() -> void:
 
 
 func _on_child_entered_tree(node: Node) -> void:
-	if node is GridInventoryItem:
+	if node is GridItemExample:
 		slot_equiped_item = node
 		weapons_equip_status.emit(node.item_database)
 		self.custom_minimum_size = node.size

@@ -10,23 +10,23 @@ var grab_action: int
 var is_grabbing: bool
 
 
-var mouse_entered_inventory: GridInventoryMap:
+var get_inventory_gui: GridInventoryMap:
 	set(value):
-		mouse_entered_inventory = value
+		get_inventory_gui = value
 		
-		#if mouse_entered_inventory != null:
-			#if mouse_entered_inventory.gui_input.is_connected(_grab_input):
-				#return
-			#mouse_entered_inventory.gui_input.connect(_grab_input)
+		if get_inventory_gui != null:
+			if get_inventory_gui.is_entered_trigger.is_connected(_gui_grab_input):
+				return
+			get_inventory_gui.is_entered_trigger.connect(_gui_grab_input)
 			
 
 var inventory_gui_input: InputEvent
 
-var revoked_target_inventory: GridInventoryMap
-var revoked_rotated: bool
-var revoked_source_item: GridInventoryItem
+var cancel_target_inventory: GridInventoryMap
+var cancel_rotated: bool
+var cancel_source_item: GridItemExample
 
-var grabbing_item: GridInventoryItem:
+var grabbing_item: GridItemExample:
 	set(value):
 		grabbing_item = value
 		if grabbing_item != null:
@@ -38,18 +38,21 @@ var grab_offset: Vector2
 var grab_before_position: Vector2i = Vector2i(-1, -1)
 
 
-var drag_server
+var drag_server: GrabService
 
 func _ready() -> void:
 	_get_config()
 
-
-func _input(event: InputEvent):
+func _gui_grab_input(event: InputEvent, tar_kernel) -> void:
+	if tar_kernel != get_inventory_gui:
+		return
+	
 	if _mouse_trigger(event, MOUSE_BUTTON_LEFT):
 		drag_server.grab_and_drop_item()
-		
+
+func _input(event: InputEvent) -> void:
 	if _mouse_trigger(event, MOUSE_BUTTON_RIGHT):
-		drag_server.grab_revoked_item()
+		drag_server.grabbing_cancel()
 		
 	if _keyboard_trigger(event, "grab_half"):
 		drag_server.grab_half_item()

@@ -7,6 +7,8 @@ class_name GridInventoryKernel
 signal inventory_overflow_item(overflow_data: Array)
 signal is_inventory_change(item: Node)
 
+signal is_entered_trigger(event: InputEvent, tar_kernel)
+
 @export var map_index: Vector2i = Vector2i(1, 1):
 	set(value):
 		map_index = value
@@ -30,11 +32,10 @@ signal is_inventory_change(item: Node)
 
 var cells_occupy_data = []
 
-var cells_occupy: BitMap
 
 var cells_non_occupy_list = {}
 
-var mouse_selection: GridInventoryItem
+var mouse_selection: GridItemExample
 
 
 
@@ -42,6 +43,7 @@ var mouse_selection: GridInventoryItem
 func _ready() -> void:
 	child_entered_tree.connect(_on_item_entered_tree)
 	child_exiting_tree.connect(_on_item_exited_tree)
+	gui_input.connect(_on_trigger_is_inventory)
 
 
 
@@ -151,7 +153,7 @@ func create_grid_item_for_resource(item_data: GridItemData, set_quantity: int, w
 func create_snapshot() -> Array:
 	var save_timeshift = []
 	if get_child_count() > 0:
-		for item: GridInventoryItem in get_children():
+		for item: GridItemExample in get_children():
 			if item.item_database == null:
 				continue
 			var create_config = {}
@@ -198,22 +200,37 @@ func scan_can_place_cells(item_size: Vector2i):
 func set_cells_occupy(start_vec: Vector2i, item_size: Vector2i, set_occupy: Variant) -> void:
 	if cells_occupy_data.is_empty():
 		_create_cells_data()
-	#if start_vec.x < 0 or start_vec.y < 0:
-		#return
-		#
-	#if start_vec.x + item_size.x > map_index.x or start_vec.y + item_size.y > map_index.y:
-		#return
+	
+	if start_vec.x < 0 or start_vec.y < 0:
+		return
+		
+	if start_vec.x + item_size.x > map_index.x or start_vec.y + item_size.y > map_index.y:
+		return
 
 	for y in range(item_size.y):
 		for x in range(item_size.x):
 			cells_occupy_data[start_vec.y + y][start_vec.x + x] = set_occupy
 	
 	if set_occupy != null:
-		cells_occupy.set_bit_rect(Rect2i(start_vec, item_size), true)
 		_remove_target_cells(start_vec)
 	else:
-		cells_occupy.set_bit_rect(Rect2i(start_vec, item_size), false)
 		_add_target_cells(start_vec)
+
+
+func get_cells_occupy_map() -> Array:
+	var cell_list = []
+	for cell_y in range(map_index.y):
+		for cell_x in range(map_index.x):
+			var dict_data = {}
+			if cells_occupy_data[cell_y][cell_x] != null:
+				dict_data["data"] = cells_occupy_data[cell_y][cell_x].item_database
+			else:
+				dict_data["data"] = null
+			cell_list.append(dict_data)
+			
+	return cell_list
+	
+		
 
 
 
@@ -244,7 +261,7 @@ func _create_grid_item_base(data: GridItemData, i_position: Vector2, i_size: Vec
 
 
 func _add_item_to_grid(c_position: Vector2, grid_pos: Vector2i, c_size: Vector2i, item_data: GridItemData, quantity: int, is_rotated: bool = false, write_cache: Dictionary = {}) -> void:
-	var inter_item: GridInventoryItem = item_package.instantiate()
+	var inter_item: GridItemExample = item_package.instantiate()
 	inter_item.position = c_position
 
 	var layer_data := GridInventoryItemData.new()
@@ -257,7 +274,6 @@ func _add_item_to_grid(c_position: Vector2, grid_pos: Vector2i, c_size: Vector2i
 	inter_item.is_rotated = is_rotated
 	self.add_child(inter_item)
 	inter_item._update_item_size()
-	inter_item.update_item_data()
 	inter_item.mouse_entered_item_rect.connect(_is_mouse_entered_item)
 	inter_item.mouse_exited_item_rect.connect(_is_mouse_exited_item)
 	set_cells_occupy(grid_pos, inter_item.item_size, inter_item)
@@ -274,8 +290,6 @@ func _compute_top_left(math_px: Vector2, item_size: Vector2i) -> Vector2i:
 
 func _create_cells_data() -> void:
 	cells_occupy_data.clear()
-	cells_occupy = BitMap.new()
-	cells_occupy.create(map_index)
 	for y in range(map_index.y):
 		var create_line = []
 		create_line.resize(map_index.x)
@@ -284,9 +298,9 @@ func _create_cells_data() -> void:
 	
 
 func _create_cells_empty_list() -> void:
-	for point_y in range(cells_occupy.get_size().y):
-		for point_x in range(cells_occupy.get_size().x):
-			if not cells_occupy.get_bit(point_x, point_y):
+	for point_y in range(map_index.y):
+		for point_x in range(map_index.x):
+			if not cells_occupy_data[point_y][point_x]:
 				cells_non_occupy_list[Vector2i(point_x, point_y)] = Vector2i(point_x, point_y)
 
 func _remove_target_cells(target_vec: Vector2i) -> void:
@@ -328,7 +342,10 @@ func _is_within_bounds(px: Vector2, g_size: Vector2i) -> bool:
 						# ===== PREVIEW ===== #
 
 func _update_cells_panel() -> void:
+	
 	custom_minimum_size = Vector2(map_index) * cell_size
+	size = Vector2(map_index) * cell_size
+	
 	if not resized.is_connected(queue_redraw):
 		resized.connect(queue_redraw)
 	queue_redraw()
@@ -353,7 +370,8 @@ func _update_cells_panel() -> void:
 			#queue_redraw()
 	#else:
 		#queue_redraw()
-
+func _on_trigger_is_inventory(event: InputEvent) -> void:
+	is_entered_trigger.emit(event, self)
 
 
 func _dev_update_index() -> void:

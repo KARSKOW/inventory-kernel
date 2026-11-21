@@ -2,8 +2,6 @@
 extends GridInventoryKernel
 class_name GridInventoryMap
 
-signal grab_input_event(event)
-
 var inventory_item_data_tree = []
 
 func _ready() -> void:
@@ -15,8 +13,8 @@ func _ready() -> void:
 		
 
 func _connect_signal():
-	mouse_entered.connect(func(): InventoryInterface.mouse_entered_inventory = self)
-	mouse_exited.connect(func(): InventoryInterface.mouse_entered_inventory = null)
+	mouse_entered.connect(func(): InventoryInterface.get_inventory_gui = self)
+	mouse_exited.connect(func(): InventoryInterface.get_inventory_gui = null)
 
 func create_item_for_name(item_name: String, set_quantity: int, write_cache: Dictionary = {}):
 	var get_item_data: GridItemData = item_db.get_library_item(item_name)
@@ -61,7 +59,7 @@ func clear_all_items(use_free: bool = true):
 	cells_non_occupy_list.clear()
 	_create_cells_data()
 
-func clear_item(item: GridInventoryItem):
+func clear_item(item: GridItemExample):
 	_tar_clean_item_occupy(item)
 	item.queue_free()
 	
@@ -77,7 +75,7 @@ func can_add_inventory(i_size: Vector2i) -> bool:
 		return false
 	return true
 
-func stacked_item(target_item: GridInventoryItem, selection: GridInventoryItem) -> bool:
+func stacked_item(target_item: GridItemExample, selection: GridItemExample) -> bool:
 	if selection == null or selection.item_database.get_item_name() != target_item.item_database.get_item_name():
 		return false
 
@@ -102,7 +100,7 @@ func read_inventory_snapshot(inventory_snapshot: Array):
 	read_snapshot(inventory_snapshot)
 
 func has_item_name(target_name: String) -> bool:
-	for i: GridInventoryItem in get_children():
+	for i: GridItemExample in get_children():
 		if i.item_database.get_item_name() == target_name:
 			return true
 	return false
@@ -114,7 +112,7 @@ func addition_item(target_name: String, add_quantity: int, write_cache: Dictiona
 
 	var quantity_left: int = add_quantity
 
-	for item: GridInventoryItem in get_children():
+	for item: GridItemExample in get_children():
 		if item.item_database.get_item_name() == target_name:
 			var math_stack_quantity = item.item_database.get_stack_size() - item.item_database.quantity
 			if math_stack_quantity > 0:
@@ -134,19 +132,19 @@ func addition_item(target_name: String, add_quantity: int, write_cache: Dictiona
 
 func subtract_item(target_name: String, sub_quantity: int):
 	var subtract_item_data: GridItemData = item_db.get_library_item(target_name)
-	var get_currect_item: Array[GridInventoryItem]
+	var get_currect_item: Array[GridItemExample]
 	var quantity_left: int = sub_quantity
 	if subtract_item_data == null:
 		return
 
-	for item: GridInventoryItem in get_children():
+	for item: GridItemExample in get_children():
 		if item.item_database.get_item_name() == target_name:
 			get_currect_item.push_back(item)
 
 	if get_currect_item.is_empty():
 		return
 
-	for item: GridInventoryItem in get_currect_item:
+	for item: GridItemExample in get_currect_item:
 		if quantity_left <= 0:
 			break
 		if item._is_item_fulled():
@@ -155,13 +153,13 @@ func subtract_item(target_name: String, sub_quantity: int):
 		item.item_database.quantity -= get_min_quantity
 		quantity_left -= get_min_quantity
 		if item.item_database.quantity <= 0:
-			_clean_item_occupy(Vector2i(item.position / item.item_cell_size), item.item_size)
+			set_cells_occupy(Vector2i(item.position / item.item_cell_size), item.item_size, null)
 			item.queue_free()
 
 	if quantity_left <= 0:
 		return
 
-	for item: GridInventoryItem in get_currect_item:
+	for item: GridItemExample in get_currect_item:
 		if quantity_left <= 0:
 			break
 		if not item._is_item_fulled():
@@ -170,36 +168,36 @@ func subtract_item(target_name: String, sub_quantity: int):
 		item.item_database.quantity -= get_min_quantity
 		quantity_left -= get_min_quantity
 		if item.item_database.quantity <= 0:
-			_clean_item_occupy(Vector2i(item.position / item.item_cell_size), item.item_size)
+			set_cells_occupy(Vector2i(item.position / item.item_cell_size), item.item_size, null)
 			item.queue_free()
 
 
 func sorted_item():
 	var sort_collect = []
 
-	for item: GridInventoryItem in get_children():
+	for item: GridItemExample in get_children():
 		sort_collect.append(item)
 
-	_clean_item_occupy(Vector2i.ZERO, map_index)
+	set_cells_occupy(Vector2i.ZERO, map_index, null)
 	
 	if sort_collect.size() <= 0:
 		return
 	
 	sort_collect.sort_custom(_sort_item_custom)
 	
-	for item: GridInventoryItem in sort_collect:
+	for item: GridItemExample in sort_collect:
 		var get_top_left = scan_can_place_cells(item.item_size)
 		var set_top_left = Vector2(get_top_left) * cell_size
 		if get_top_left != Vector2i(-1, -1):
 			item.position = set_top_left
-			_added_item_occupy(get_top_left, item.item_size, item)
+			set_cells_occupy(get_top_left, item.item_size, item)
 
 func _scan_inventory_cells_empty(item_size: Vector2i, rotated_scan: bool = false) -> Vector2i:
 	if rotated_scan == false:
 		return scan_can_place_cells(item_size)
 	return scan_can_place_cells(Vector2i(item_size.y, item_size.x))
 
-func get_grid_item(target: Vector2i) -> GridInventoryItem:
+func get_grid_item(target: Vector2i) -> GridItemExample:
 	return cells_occupy_data[target.y][target.x]
 
 func set_item_occupy_map(set_map: PackedInt32Array) -> void:
@@ -208,37 +206,32 @@ func set_item_occupy_map(set_map: PackedInt32Array) -> void:
 func get_item_occupy_map() -> PackedInt32Array:
 	return cells_occupy_data
 
-func _is_item_stack_full(target_item: GridInventoryItem) -> bool:
+func _is_item_stack_full(target_item: GridItemExample) -> bool:
 	return target_item.item_database.quantity >= target_item.item_database.get_stack_size()
 
-func _is_same_item_name(target_item: GridInventoryItem, selection: GridInventoryItem):
+func _is_same_item_name(target_item: GridItemExample, selection: GridItemExample):
 	var get_selection_item_name: String = selection.item_database.get_item_name()
 	var get_target_item_name: String = target_item.item_database.get_item_name()
 	return get_selection_item_name == get_target_item_name
 
-func _sort_item_custom(a: GridInventoryItem, b:GridInventoryItem):
+func _sort_item_custom(a: GridItemExample, b:GridItemExample):
 	if a.item_size != b.item_size:
 		return a.item_size > b.item_size
 	
 	return a.item_database.quantity > b.item_database.quantity
 
-func _drag_half_item(selection: GridInventoryItem):
+func _drag_half_item(selection: GridItemExample):
 	var compute_half = selection.item_database.quantity / 2
 	selection.item_database.quantity -= compute_half
 	return compute_half
 
-func _clean_item_occupy(up_left: Vector2i, item_size: Vector2i):
-	set_cells_occupy(up_left, item_size, null)
 	
-func _tar_clean_item_occupy(clean_target: GridInventoryItem):
+func _tar_clean_item_occupy(clean_target: GridItemExample):
 	var get_top_left = Vector2i(clean_target.position / clean_target.item_cell_size)
-	_clean_item_occupy(get_top_left, clean_target.item_size)
-
-func _added_item_occupy(up_left: Vector2i, item_size: Vector2i, get_item: Variant):
-	set_cells_occupy(up_left, item_size, get_item)
+	set_cells_occupy(get_top_left, clean_target.item_size, null)
 
 func connection_item_selection():
-	for item: GridInventoryItem in get_children():
+	for item: GridItemExample in get_children():
 		if not item.mouse_entered_item_rect.is_connected(_is_mouse_entered_item):
 			item.mouse_entered_item_rect.connect(_is_mouse_entered_item)
 			item.mouse_exited_item_rect.connect(_is_mouse_exited_item)
