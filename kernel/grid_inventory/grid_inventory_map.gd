@@ -39,11 +39,11 @@ func create_item_for_resource(item_data: GridItemData, set_quantity: int, write_
 	var quantity_left: int = set_quantity
 	
 	for i in range(math):
-		create_grid_item(item_data.item_name, item_data.stack_size, write_cache)
+		create_grid_item_for_resource(item_data, item_data.stack_size, write_cache)
 		quantity_left -= item_data.stack_size
 	
 	if quantity_left > 0:
-		create_grid_item(item_data.item_name, quantity_left, write_cache)
+		create_grid_item_for_resource(item_data, quantity_left, write_cache)
 
 
 func create_item_base(data: GridItemData, quantity: int, i_size: Vector2i, i_position: Vector2, i_rorated: bool):
@@ -58,6 +58,7 @@ func clear_all_items(use_free: bool = true):
 	cells_occupy_data = []
 	cells_non_occupy_list.clear()
 	_create_cells_data()
+	_create_cells_empty_list()
 
 func clear_item(item: GridItemExample):
 	_tar_clean_item_occupy(item)
@@ -147,7 +148,7 @@ func subtract_item(target_name: String, sub_quantity: int):
 	for item: GridItemExample in get_currect_item:
 		if quantity_left <= 0:
 			break
-		if item._is_item_fulled():
+		if item.item_database.quantity >= item.item_database.get_stack_size():
 			continue
 		var get_min_quantity = mini(quantity_left, item.item_database.quantity)
 		item.item_database.quantity -= get_min_quantity

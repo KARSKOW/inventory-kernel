@@ -186,25 +186,20 @@ func get_cells_occupy_map() -> Array:
 	var cell_list = []
 	for cell_y in range(map_index.y):
 		for cell_x in range(map_index.x):
-			var dict_data = {}
 			if cells_occupy_data[cell_y][cell_x] != null:
-				dict_data["data"] = cells_occupy_data[cell_y][cell_x].item_database
+				cell_list.append(cells_occupy_data[cell_y][cell_x].item_database)
 			else:
-				dict_data["data"] = null
-			cell_list.append(dict_data)
+				cell_list.append(null)
 			
 	return cell_list
-	
-		
-
 
 
 func get_cells_occupy(start_vec: Vector2i, item_size: Vector2i):
 	if start_vec.x < 0 or start_vec.y < 0:
-		return false
+		return null
 		
 	if start_vec.x + item_size.x > map_index.x:
-		return false
+		return null
 		
 	if start_vec.y + item_size.y > map_index.y:
 		return false
@@ -212,8 +207,8 @@ func get_cells_occupy(start_vec: Vector2i, item_size: Vector2i):
 	for y in range(item_size.y):
 		for x in range(item_size.x):
 			if cells_occupy_data[start_vec.y + y][start_vec.x + x] != null:
-				return false
-	return true
+				return cells_occupy_data[y][x]
+	return null
 
 
 func _create_grid_item_base(data: GridItemData, i_position: Vector2, i_size: Vector2i, quantity: int, is_rotated: bool, write_cache: Dictionary = {}):

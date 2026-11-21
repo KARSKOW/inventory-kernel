@@ -26,7 +26,7 @@ func grab_and_drop_item():
 		return
 	
 	var get_grab_item = interface.grabbing_item.item_database
-	if interface.get_inventory_gui.get_cells_occupy(_get_computed_top_left(), get_grab_item.get_item_size(interface.grabbing_item.is_rotated)) == false:
+	if interface.get_inventory_gui.get_cells_occupy(_get_computed_top_left(), get_grab_item.get_item_size(interface.grabbing_item.is_rotated)) != null:
 		grabbing_merge()
 		return
 
@@ -41,7 +41,6 @@ func grab_and_drop_item():
 	interface.cancel_source_item = null
 	interface.grab_before_position = Vector2i(-1, -1)
 	interface.grabbing_item = null
-
 
 func grabbing_merge():
 	var interface = InventoryInterface
@@ -139,8 +138,8 @@ func grab_half_item():
 
 	interface.add_child(create_new_item)
 	create_new_item._update_item_size()
-	create_new_item.update_item_data()
-	get_source_item.update_item_data()
+	create_new_item.update_item_viewport()
+	get_source_item.update_item_viewport()
 
 	create_new_item.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED
 	interface.grab_offset = -Vector2(create_new_item.item_size) * create_new_item.item_cell_size * 0.5
