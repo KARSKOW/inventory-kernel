@@ -54,9 +54,6 @@ func _draw() -> void:
 			Rect2(Vector2.ZERO, size),
 			true
 		)
-	#if map_choosing_texture:
-		#_preview_selecter(get_local_mouse_position(), Vector2i())
-
 
 
 #func _can_place_on_grid(pos: Vector2i, item_size: Vector2i):
@@ -85,15 +82,7 @@ func create_grid_item(item_name: String, set_quantity: int, write_cache: Diction
 	if get_top_left == Vector2i(-1, -1):
 		if get_top_left_rotated != Vector2i(-1, -1):
 			var set_top_left_rotate = Vector2(get_top_left_rotated) * cell_size
-			_add_item_to_grid(
-				set_top_left_rotate, 
-				get_top_left_rotated, 
-				size_rotated, 
-				get_item_data, 
-				set_quantity, 
-				true, 
-				write_cache
-				)
+			_add_item_to_grid(set_top_left_rotate, set_quantity, get_item_data, true, write_cache)
 
 			return
 		print_rich("[color=red] [ERROR][/color]", " Can't add this item. this object will not be generated. ")
@@ -101,15 +90,7 @@ func create_grid_item(item_name: String, set_quantity: int, write_cache: Diction
 		return
 	
 	var set_top_left = Vector2(get_top_left) * cell_size
-	_add_item_to_grid(
-		set_top_left, 
-		get_top_left, 
-		size_normal, 
-		get_item_data, 
-		set_quantity, 
-		false, 
-		write_cache
-		)
+	_add_item_to_grid(set_top_left, set_quantity, get_item_data, false, write_cache)
 
 
 
@@ -122,15 +103,7 @@ func create_grid_item_for_resource(item_data: GridItemData, set_quantity: int, w
 	if get_top_left == Vector2i(-1, -1):
 		if get_top_left_rotated != Vector2i(-1, -1):
 			var set_top_left_rotate = Vector2(get_top_left_rotated) * cell_size
-			_add_item_to_grid(
-				set_top_left_rotate, 
-				get_top_left_rotated, 
-				size_rotated, 
-				item_data, 
-				set_quantity, 
-				true, 
-				write_cache
-				)
+			_add_item_to_grid(set_top_left_rotate, set_quantity, item_data, true, write_cache)
 
 			return
 		print_rich("[color=red] [ERROR][/color]", " Can't add this item. this object will not be generated. ")
@@ -138,15 +111,7 @@ func create_grid_item_for_resource(item_data: GridItemData, set_quantity: int, w
 		return
 	
 	var set_top_left = Vector2(get_top_left) * cell_size
-	_add_item_to_grid(
-		set_top_left, 
-		get_top_left, 
-		size_normal, 
-		item_data, 
-		set_quantity, 
-		false, 
-		write_cache
-		)
+	_add_item_to_grid(set_top_left, set_quantity, item_data, false, write_cache)
 
 
 
@@ -256,27 +221,29 @@ func _create_grid_item_base(data: GridItemData, i_position: Vector2, i_size: Vec
 		return
 	var get_top_left = Vector2(i_position) / cell_size
 	var set_top_left = Vector2(get_top_left) * cell_size
-	_add_item_to_grid(set_top_left, get_top_left, i_size, data, quantity, is_rotated, write_cache)
+	_add_item_to_grid(set_top_left, quantity, data, is_rotated, write_cache)
 
 
 
-func _add_item_to_grid(c_position: Vector2, grid_pos: Vector2i, c_size: Vector2i, item_data: GridItemData, quantity: int, is_rotated: bool = false, write_cache: Dictionary = {}) -> void:
+func _add_item_to_grid(i_position: Vector2, quantity: int, i_data: GridItemData, is_rotated: bool = false, write_cache: Dictionary = {}) -> void:
 	var inter_item: GridItemExample = item_package.instantiate()
-	inter_item.position = c_position
+	var i_position_index = Vector2(i_position) / cell_size
+	
+	inter_item.position = i_position
 
 	var layer_data := GridInventoryItemData.new()
-	layer_data.data = item_data
+	layer_data.data = i_data
 	layer_data.quantity = quantity
 	layer_data.cache = write_cache
 	
 	inter_item.item_database = layer_data
-	inter_item.item_size = c_size
+	inter_item.item_size = layer_data.get_item_size(is_rotated)
 	inter_item.is_rotated = is_rotated
 	self.add_child(inter_item)
 	inter_item._update_item_size()
 	inter_item.mouse_entered_item_rect.connect(_is_mouse_entered_item)
 	inter_item.mouse_exited_item_rect.connect(_is_mouse_exited_item)
-	set_cells_occupy(grid_pos, inter_item.item_size, inter_item)
+	set_cells_occupy(i_position_index, inter_item.item_size, inter_item)
 
 				 # ===== COMPUTE CELLS RECT ===== #
 
@@ -351,7 +318,7 @@ func _update_cells_panel() -> void:
 	queue_redraw()
 
 
-#func _preview_selecter(mouse_px: Vector2, chooise_size: Vector2i) -> void:
+#func _update_preview_selecter(mouse_px: Vector2, chooise_size: Vector2i) -> void:
 	#var math_size = Vector2(chooise_size) * 0.5
 	#var top_left_index = _compute_top_left(mouse_px, chooise_size)
 	#var px = (Vector2(top_left_index) + math_size) * cell_size
@@ -364,12 +331,13 @@ func _update_cells_panel() -> void:
 				#Rect2((px - new_size / 2), new_size),
 				#false
 				#)
-			##item_selection_size.set_selection_rect(new_size)
-			##item_selection_size.set_selection_position(px - new_size / 2)
+			#item_selection_size.set_selection_rect(new_size)
+			#item_selection_size.set_selection_position(px - new_size / 2)
 		#else:
 			#queue_redraw()
 	#else:
 		#queue_redraw()
+	
 func _on_trigger_is_inventory(event: InputEvent) -> void:
 	is_entered_trigger.emit(event, self)
 
