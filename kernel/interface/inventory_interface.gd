@@ -1,5 +1,7 @@
 extends CanvasLayer
 
+signal is_item_out_of_bounds(get_grabbing_item)
+
 const GrabService = preload("uid://cdpum4qhf7ycg")
 
 const smooth_offset: float = 0.5

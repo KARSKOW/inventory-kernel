@@ -14,7 +14,8 @@ signal is_entered_trigger(event: InputEvent, tar_kernel)
 		map_index = value
 		_update_cells_panel()
 		
-@export var map_choosing_texture: Texture2D
+#@export var map_choosing_texture: Texture2D
+@export var map_choosing_color: Color
 		
 @export var item_db: ItemDB
 @export var item_package: PackedScene
@@ -54,17 +55,26 @@ func _draw() -> void:
 			Rect2(Vector2.ZERO, size),
 			true
 		)
+	if not Engine.is_editor_hint():
+		if InventoryInterface.grabbing_item != null:
+			var get_item_size = InventoryInterface.grabbing_item.item_database.get_item_size(InventoryInterface.grabbing_item.is_rotated)
+			_update_preview_selecter(get_local_mouse_position(), get_item_size)
 
+func _process(delta: float) -> void:
+	if not Engine.is_editor_hint():
+		if InventoryInterface.grabbing_item != null:
+			queue_redraw()
+	pass
 
-#func _can_place_on_grid(pos: Vector2i, item_size: Vector2i):
-	#var math_bottom_right = pos + item_size - Vector2i(1, 1)
-	#
-	#if pos.x < 0 or pos.y < 0 \
-	 #or math_bottom_right.x >= map_index.x \
-	 #or math_bottom_right.y >= map_index.y:
-		#return false
-		#
-	#return _is_cells_empty(pos, item_size)
+func _can_place_on_grid(pos: Vector2i, item_size: Vector2i):
+	var math_bottom_right = pos + item_size - Vector2i(1, 1)
+	
+	if pos.x < 0 or pos.y < 0 \
+	 or math_bottom_right.x >= map_index.x \
+	 or math_bottom_right.y >= map_index.y:
+		return false
+		
+	return _is_cells_empty(pos, item_size)
 
 
 
@@ -202,12 +212,13 @@ func get_cells_occupy(start_vec: Vector2i, item_size: Vector2i):
 		return null
 		
 	if start_vec.y + item_size.y > map_index.y:
-		return false
+		return null
 		
 	for y in range(item_size.y):
 		for x in range(item_size.x):
-			if cells_occupy_data[start_vec.y + y][start_vec.x + x] != null:
-				return cells_occupy_data[y][x]
+			var occupy_item = cells_occupy_data[start_vec.y + y][start_vec.x + x]
+			if occupy_item != null:
+				return occupy_item
 	return null
 
 
@@ -225,6 +236,7 @@ func _add_item_to_grid(i_position: Vector2, quantity: int, i_data: GridItemData,
 	var i_position_index = Vector2(i_position) / cell_size
 	
 	inter_item.position = i_position
+	inter_item.item_cell_size = cell_size
 
 	var layer_data := GridInventoryItemData.new()
 	layer_data.data = i_data
@@ -242,11 +254,11 @@ func _add_item_to_grid(i_position: Vector2, quantity: int, i_data: GridItemData,
 
 				 # ===== COMPUTE CELLS RECT ===== #
 
-func _compute_top_left(math_px: Vector2, item_size: Vector2i) -> Vector2i:
-	var math_size = Vector2(item_size) * 0.5
-	var math_grid_index = (math_px / cell_size) - math_size
-	var math_pos_px = Vector2i(round(math_grid_index.x), round(math_grid_index.y))
-	return math_pos_px
+func _compute_top_left(math_px: Vector2, _item_size: Vector2i) -> Vector2i:
+	# 按抓取偏移计算物品的虚拟左上角
+	var virtual_top_left = math_px + InventoryInterface.grab_offset
+	var math_grid_index = virtual_top_left / cell_size
+	return Vector2i(round(math_grid_index.x), round(math_grid_index.y))
 
 
 
@@ -313,25 +325,19 @@ func _update_cells_panel() -> void:
 	queue_redraw()
 
 
-#func _update_preview_selecter(mouse_px: Vector2, chooise_size: Vector2i) -> void:
-	#var math_size = Vector2(chooise_size) * 0.5
-	#var top_left_index = _compute_top_left(mouse_px, chooise_size)
-	#var px = (Vector2(top_left_index) + math_size) * cell_size
-	#
-	#if _is_within_bounds(mouse_px, chooise_size):
-		#if _scan_item_rect(mouse_px, chooise_size).size() <= 1:
-			#var new_size = Vector2(chooise_size.x * cell_size, chooise_size.y * cell_size)
-			#draw_texture_rect(
-				#map_choosing_texture,
-				#Rect2((px - new_size / 2), new_size),
-				#false
-				#)
-			#item_selection_size.set_selection_rect(new_size)
-			#item_selection_size.set_selection_position(px - new_size / 2)
-		#else:
-			#queue_redraw()
-	#else:
-		#queue_redraw()
+func _update_preview_selecter(mouse_px: Vector2, chooise_size: Vector2i) -> void:
+	var math_size = Vector2(chooise_size) * 0.5
+	var top_left_index = _compute_top_left(mouse_px, chooise_size)
+	var px = (Vector2(top_left_index) + math_size) * cell_size
+	
+	if not _can_place_on_grid(top_left_index, chooise_size):
+		return
+	
+	var new_size = Vector2(chooise_size.x * cell_size, chooise_size.y * cell_size)
+	draw_rect(
+		Rect2((px - new_size / 2), new_size),
+		map_choosing_color
+		)
 	
 func _on_trigger_is_inventory(event: InputEvent) -> void:
 	is_entered_trigger.emit(event, self)
