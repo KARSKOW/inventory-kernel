@@ -65,9 +65,9 @@ func clear_item(item: GridItemExample):
 	item.queue_free()
 	
 func clear_item_from_cursor(set_occupy: bool = true) -> void:
-	if set_occupy == true and mouse_selection != null:
-		mouse_selection.queue_free()
-		_tar_clean_item_occupy(mouse_selection)
+	if set_occupy == true and get_cursor_item != null:
+		get_cursor_item.queue_free()
+		_tar_clean_item_occupy(get_cursor_item)
 
 func can_add_inventory(i_size: Vector2i) -> bool:
 	if _scan_inventory_cells_empty(i_size) == Vector2i(-1, -1):

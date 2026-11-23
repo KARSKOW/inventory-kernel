@@ -36,7 +36,7 @@ var cells_occupy_data = []
 
 var cells_non_occupy_list = {}
 
-var mouse_selection: GridItemExample
+var get_cursor_item: GridItemExample
 
 
 
@@ -135,6 +135,17 @@ func placed_grid_item(item_object: Array[GridItemExample]):
 			item.reparent(self)
 			item.position = scan_can_place_cells(item.item_database.get_item_size(item.is_rotated)) * cell_size
 			set_cells_occupy(Vector2(item.position) / cell_size, item.item_database.get_item_size(item.is_rotated), item)
+
+
+
+# Warning: Experimental.
+# Need TEST this function acceptable.
+func remove_grid_item(item_object: GridItemExample):
+	var get_item_size = item_object.item_database.get_item_size(item_object.is_rotated)
+	set_cells_occupy(Vector2(item_object.position) / cell_size, get_item_size, null)
+	item_object.queue_free()
+
+
 
 func create_snapshot() -> Array:
 	var save_timeshift = []
@@ -358,10 +369,10 @@ func _on_resized() -> void:
 	_update_cells_panel()
 
 func _is_mouse_entered_item(rect):
-	mouse_selection = rect
+	get_cursor_item = rect
 	
 func _is_mouse_exited_item():
-	mouse_selection = null
+	get_cursor_item = null
 	
 func _on_item_entered_tree(node):
 	is_inventory_change.emit(node)
