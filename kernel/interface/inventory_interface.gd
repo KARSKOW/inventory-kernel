@@ -17,9 +17,9 @@ var get_inventory_gui: GridInventoryMap:
 		get_inventory_gui = value
 		
 		if get_inventory_gui != null:
-			if get_inventory_gui.is_entered_trigger.is_connected(_gui_grab_input):
+			if get_inventory_gui._is_entered_trigger.is_connected(_gui_grab_input):
 				return
-			get_inventory_gui.is_entered_trigger.connect(_gui_grab_input)
+			get_inventory_gui._is_entered_trigger.connect(_gui_grab_input)
 			
 
 var inventory_gui_input: InputEvent

@@ -7,7 +7,7 @@ class_name GridInventoryKernel
 signal inventory_overflow_item(overflow_data: Array)
 signal is_inventory_change(item: Node)
 
-signal is_entered_trigger(event: InputEvent, tar_kernel)
+signal _is_entered_trigger(event: InputEvent, tar_kernel)
 
 @export var map_index: Vector2i = Vector2i(1, 1):
 	set(value):
@@ -58,23 +58,14 @@ func _draw() -> void:
 	if not Engine.is_editor_hint():
 		if InventoryInterface.grabbing_item != null:
 			var get_item_size = InventoryInterface.grabbing_item.item_database.get_item_size(InventoryInterface.grabbing_item.is_rotated)
-			_update_preview_selecter(get_local_mouse_position(), get_item_size)
+			_update_selecter_preview(get_local_mouse_position(), get_item_size)
 
-func _process(delta: float) -> void:
+
+
+func _input(_event: InputEvent) -> void:
 	if not Engine.is_editor_hint():
 		if InventoryInterface.grabbing_item != null:
 			queue_redraw()
-	pass
-
-func _can_place_on_grid(pos: Vector2i, item_size: Vector2i):
-	var math_bottom_right = pos + item_size - Vector2i(1, 1)
-	
-	if pos.x < 0 or pos.y < 0 \
-	 or math_bottom_right.x >= map_index.x \
-	 or math_bottom_right.y >= map_index.y:
-		return false
-		
-	return _is_cells_empty(pos, item_size)
 
 
 
@@ -84,6 +75,8 @@ func create_grid_item(item_name: String, set_quantity: int, write_cache: Diction
 		print_rich("[color=red] [ERROR][/color]", " Can't found this item: ", item_name)
 		inventory_overflow_item.emit([item_name, set_quantity])
 		return
+
+
 	var size_normal: Vector2i = get_item_data.item_size
 	var size_rotated := Vector2i(get_item_data.item_size.y, get_item_data.item_size.x)
 	var get_top_left = scan_can_place_cells(size_normal)
@@ -124,6 +117,24 @@ func create_grid_item_for_resource(item_data: GridItemData, set_quantity: int, w
 	_add_item_to_grid(set_top_left, set_quantity, item_data, false, write_cache)
 
 
+# Warning: Experimental.
+# Need TEST this function acceptable.
+func find_grid_item(item_name: String):
+	var found_item = []
+	for item: GridItemExample in get_children():
+		if item.item_database.get_item_name() == item_name:
+			found_item.append(item)
+	return found_item
+
+
+# Warning: Experimental.
+# Need TEST this function acceptable.
+func placed_grid_item(item_object: Array[GridItemExample]):
+	for item: GridItemExample in item_object:
+		if scan_can_place_cells(item.item_database.get_item_size(item.is_rotated)) != Vector2i(-1, -1):
+			item.reparent(self)
+			item.position = scan_can_place_cells(item.item_database.get_item_size(item.is_rotated)) * cell_size
+			set_cells_occupy(Vector2(item.position) / cell_size, item.item_database.get_item_size(item.is_rotated), item)
 
 func create_snapshot() -> Array:
 	var save_timeshift = []
@@ -301,17 +312,15 @@ func _is_cells_empty(start_pos: Vector2i, item_size: Vector2i) -> bool:
 				return false
 	return true
 
-
-func _is_within_bounds(px: Vector2, g_size: Vector2i) -> bool:
-	var top_left_index = _compute_top_left(px, g_size)
-	var math_bottom_right = top_left_index + g_size - Vector2i(1, 1)
+func _can_place_on_grid(pos: Vector2i, item_size: Vector2i):
+	var math_bottom_right = pos + item_size - Vector2i(1, 1)
 	
-	if top_left_index.x >= 0 and top_left_index.y >= 0 \
-		and math_bottom_right.x < map_index.x \
-		and math_bottom_right.y < map_index.y:
-		return true
-	else:
+	if pos.x < 0 or pos.y < 0 \
+	 or math_bottom_right.x >= map_index.x \
+	 or math_bottom_right.y >= map_index.y:
 		return false
+		
+	return _is_cells_empty(pos, item_size)
 
 						# ===== PREVIEW ===== #
 
@@ -325,7 +334,7 @@ func _update_cells_panel() -> void:
 	queue_redraw()
 
 
-func _update_preview_selecter(mouse_px: Vector2, chooise_size: Vector2i) -> void:
+func _update_selecter_preview(mouse_px: Vector2, chooise_size: Vector2i) -> void:
 	var math_size = Vector2(chooise_size) * 0.5
 	var top_left_index = _compute_top_left(mouse_px, chooise_size)
 	var px = (Vector2(top_left_index) + math_size) * cell_size
@@ -334,13 +343,12 @@ func _update_preview_selecter(mouse_px: Vector2, chooise_size: Vector2i) -> void
 		return
 	
 	var new_size = Vector2(chooise_size.x * cell_size, chooise_size.y * cell_size)
-	draw_rect(
-		Rect2((px - new_size / 2), new_size),
-		map_choosing_color
-		)
-	
+	draw_rect(Rect2((px - new_size / 2), new_size), map_choosing_color)
+
+
+
 func _on_trigger_is_inventory(event: InputEvent) -> void:
-	is_entered_trigger.emit(event, self)
+	_is_entered_trigger.emit(event, self)
 
 
 func _dev_update_index() -> void:

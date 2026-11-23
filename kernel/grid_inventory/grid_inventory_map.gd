@@ -133,14 +133,10 @@ func addition_item(target_name: String, add_quantity: int, write_cache: Dictiona
 
 func subtract_item(target_name: String, sub_quantity: int):
 	var subtract_item_data: GridItemData = item_db.get_library_item(target_name)
-	var get_currect_item: Array[GridItemExample]
+	var get_currect_item = find_grid_item(target_name)
 	var quantity_left: int = sub_quantity
 	if subtract_item_data == null:
 		return
-
-	for item: GridItemExample in get_children():
-		if item.item_database.get_item_name() == target_name:
-			get_currect_item.push_back(item)
 
 	if get_currect_item.is_empty():
 		return
@@ -201,11 +197,6 @@ func _scan_inventory_cells_empty(item_size: Vector2i, rotated_scan: bool = false
 func get_grid_item(target: Vector2i) -> GridItemExample:
 	return cells_occupy_data[target.y][target.x]
 
-func set_item_occupy_map(set_map: PackedInt32Array) -> void:
-	cells_occupy_data = set_map
-	
-func get_item_occupy_map() -> PackedInt32Array:
-	return cells_occupy_data
 
 func _is_item_stack_full(target_item: GridItemExample) -> bool:
 	return target_item.item_database.quantity >= target_item.item_database.get_stack_size()
