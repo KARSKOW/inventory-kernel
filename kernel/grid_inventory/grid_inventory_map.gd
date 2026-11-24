@@ -46,8 +46,8 @@ func create_item_for_resource(item_data: GridItemData, set_quantity: int, write_
 		create_grid_item_for_resource(item_data, quantity_left, write_cache)
 
 
-func create_item_base(data: GridItemData, quantity: int, i_size: Vector2i, i_position: Vector2, i_rorated: bool):
-	_create_grid_item_base(data, i_position, i_size, quantity, i_rorated)
+func create_item_base(data: GridItemData, quantity: int, i_position: Vector2, i_rorated: bool):
+	_create_grid_item_base(data, i_position, quantity, i_rorated)
 
 func clear_all_items(use_free: bool = true):
 	for item in self.get_children():
@@ -75,23 +75,6 @@ func can_add_inventory(i_size: Vector2i) -> bool:
 			return true
 		return false
 	return true
-
-func stacked_item(target_item: GridItemExample, selection: GridItemExample) -> bool:
-	if selection == null or selection.item_database.get_item_name() != target_item.item_database.get_item_name():
-		return false
-
-	var stack_max = selection.item_database.get_stack_size()
-	var math = target_item.item_database.quantity + selection.item_database.quantity
-
-	if math <= stack_max:
-		selection.item_database.quantity += target_item.item_database.quantity
-		target_item.queue_free()
-		return false
-	else:
-		var space = stack_max - selection.item_database.quantity
-		selection.item_database.quantity += space
-		target_item.item_database.quantity -= space
-		return target_item.item_database.quantity > 0
 
 func create_inventory_snapshot():
 	inventory_item_data_tree = create_snapshot()
@@ -122,6 +105,7 @@ func addition_item(target_name: String, add_quantity: int, write_cache: Dictiona
 				quantity_left -= get_min_quantity
 				if quantity_left <= 0:
 					return
+			item.update_item_viewport()
 
 	if quantity_left > 0:
 		var full_stacks: int = quantity_left / addition_item_data.stack_size
@@ -153,21 +137,45 @@ func subtract_item(target_name: String, sub_quantity: int):
 			set_cells_occupy(Vector2i(item.position / item.item_cell_size), item.item_size, null)
 			item.queue_free()
 
+		item.update_item_viewport()
+
 	if quantity_left <= 0:
 		return
 
 	for item: GridItemExample in get_currect_item:
 		if quantity_left <= 0:
 			break
-		if not item._is_item_fulled():
+		if item.item_database.quantity < item.item_database.get_stack_size():
 			continue
 		var get_min_quantity = mini(quantity_left, item.item_database.quantity)
-		item.item_database.quantity -= get_min_quantity
 		quantity_left -= get_min_quantity
+
+		item.item_database.quantity -= get_min_quantity
+		item.update_item_viewport()
+
 		if item.item_database.quantity <= 0:
 			set_cells_occupy(Vector2i(item.position / item.item_cell_size), item.item_size, null)
 			item.queue_free()
 
+func stacked_item(target_item: GridItemExample, selection: GridItemExample) -> bool:
+	if selection == null or selection.item_database.get_item_name() != target_item.item_database.get_item_name():
+		return false
+
+	var stack_max = selection.item_database.get_stack_size()
+	var math = target_item.item_database.quantity + selection.item_database.quantity
+
+	if math <= stack_max:
+		selection.item_database.quantity += target_item.item_database.quantity
+		target_item.queue_free()
+		return false
+	else:
+		var space = stack_max - selection.item_database.quantity
+		selection.item_database.quantity += space
+		target_item.item_database.quantity -= space
+		return target_item.item_database.quantity > 0
+
+	target_item.update_item_viewport()
+	selection.update_item_viewport()
 
 func sorted_item():
 	var sort_collect = []
@@ -193,9 +201,6 @@ func _scan_inventory_cells_empty(item_size: Vector2i, rotated_scan: bool = false
 	if rotated_scan == false:
 		return scan_can_place_cells(item_size)
 	return scan_can_place_cells(Vector2i(item_size.y, item_size.x))
-
-func get_grid_item(target: Vector2i) -> GridItemExample:
-	return cells_occupy_data[target.y][target.x]
 
 
 func _is_item_stack_full(target_item: GridItemExample) -> bool:

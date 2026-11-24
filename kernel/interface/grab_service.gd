@@ -28,6 +28,7 @@ func grab_and_drop_item():
 		return
 	
 	var get_grab_item = interface.grabbing_item.item_database
+	# _get_computed_top_left() 已保证区域在边界内，因此这里的 null 只表示空区域。
 	var get_cells_item = interface.get_inventory_gui.get_cells_occupy(computed_top_left, get_grab_item.get_item_size(interface.grabbing_item.is_rotated))
 	if get_cells_item != null:
 		grabbing_merge(get_cells_item)
@@ -47,9 +48,8 @@ func grab_and_drop_item():
 
 func grabbing_merge(get_source_item: GridItemExample):
 	var interface = InventoryInterface
-	var interface_grabbing_item = interface.grabbing_item
 	
-	if interface_grabbing_item == null:
+	if interface.grabbing_item == null:
 		return
 	if interface.get_inventory_gui == null:
 		return
@@ -57,7 +57,7 @@ func grabbing_merge(get_source_item: GridItemExample):
 		return
 
 	var get_source_data = get_source_item.item_database
-	var get_grab_data = interface_grabbing_item.item_database
+	var get_grab_data = interface.grabbing_item.item_database
 	if get_source_data.get_item_name() != get_grab_data.get_item_name():
 		return
 
@@ -71,14 +71,13 @@ func grabbing_merge(get_source_item: GridItemExample):
 	get_source_item.update_item_viewport()
 
 	if get_grab_data.quantity <= 0:
-		interface_grabbing_item.queue_free()
-		interface_grabbing_item = null
+		interface.grabbing_item.queue_free()
 		interface.grabbing_item = null
 		interface.cancel_source_item = null
 		interface.cancel_target_inventory = null
 		interface.grab_before_position = Vector2i(-1, -1)
 	else:
-		interface_grabbing_item.update_item_viewport()
+		interface.grabbing_item.update_item_viewport()
 		
 
 func grabbing_cancel():
@@ -114,6 +113,10 @@ func grab_half_item():
 	var interface = InventoryInterface
 	if interface.get_inventory_gui == null:
 		return
+
+	if interface.grabbing_item != null:
+		return
+
 	var get_inventory_map = interface.get_inventory_gui
 	var mouse_grid_pos = Vector2i(get_inventory_map.get_local_mouse_position() / get_inventory_map.cell_size)
 	var get_source_item: GridItemExample = get_inventory_map.get_grid_item(mouse_grid_pos)
@@ -175,20 +178,13 @@ func _get_computed_top_left() -> Vector2i:
 		return Vector2i(-1, -1)
 
 	var get_inventory_gui = interface.get_inventory_gui
-	var get_map_index = get_inventory_gui.map_index
 	var get_item_size = interface_grabbing_item.item_database.get_item_size(interface_grabbing_item.is_rotated)
 	var get_top_left = get_inventory_gui._compute_top_left(
 		get_inventory_gui.get_local_mouse_position(),
 		get_item_size
 	)
 
-	if get_top_left.x < 0 or get_top_left.y < 0:
-		return Vector2i(-1, -1)
-
-	if get_top_left.x > (get_map_index.x - 1) or get_top_left.y > (get_map_index.y - 1):
-		return Vector2i(-1, -1)
-
-	if (get_top_left.x + get_item_size.x) > get_map_index.x or (get_top_left.y + get_item_size.y) > get_map_index.y:
+	if not get_inventory_gui.is_cells_in_bounds(get_top_left, get_item_size):
 		return Vector2i(-1, -1)
 
 	return get_top_left

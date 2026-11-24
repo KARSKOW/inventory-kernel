@@ -134,7 +134,7 @@ func placed_grid_item(item_object: Array[GridItemExample]):
 		if scan_can_place_cells(item.item_database.get_item_size(item.is_rotated)) != Vector2i(-1, -1):
 			item.reparent(self)
 			item.position = scan_can_place_cells(item.item_database.get_item_size(item.is_rotated)) * cell_size
-			set_cells_occupy(Vector2(item.position) / cell_size, item.item_database.get_item_size(item.is_rotated), item)
+			set_cells_occupy(Vector2i(Vector2(item.position) / cell_size), item.item_database.get_item_size(item.is_rotated), item)
 
 
 
@@ -142,9 +142,24 @@ func placed_grid_item(item_object: Array[GridItemExample]):
 # Need TEST this function acceptable.
 func remove_grid_item(item_object: GridItemExample):
 	var get_item_size = item_object.item_database.get_item_size(item_object.is_rotated)
-	set_cells_occupy(Vector2(item_object.position) / cell_size, get_item_size, null)
+	set_cells_occupy(Vector2i(Vector2(item_object.position) / cell_size), get_item_size, null)
 	item_object.queue_free()
 
+
+func get_grid_item(target: Vector2i) -> GridItemExample:
+	if not is_cells_in_bounds(target, Vector2i.ONE):
+		return null
+
+	if cells_occupy_data.is_empty():
+		return null
+
+	if target.y >= cells_occupy_data.size():
+		return null
+
+	if target.x >= cells_occupy_data[target.y].size():
+		return null
+
+	return cells_occupy_data[target.y][target.x]
 
 
 func create_snapshot() -> Array:
@@ -178,7 +193,7 @@ func read_snapshot(read_resource: Array) -> void:
 				continue
 			if port_cache == null:
 				continue
-			_create_grid_item_base(port_data, port_position, port_data.item_size, port_quantity, port_is_rotated, port_cache)
+			_create_grid_item_base(port_data, port_position, port_quantity, port_is_rotated, port_cache)
 
 
 
@@ -188,7 +203,7 @@ func scan_can_place_cells(item_size: Vector2i):
 	get_cells_non_occupy_list.sort_custom(lambda)
 	
 	for i in get_cells_non_occupy_list:
-		if _is_cells_empty(i, item_size):
+		if is_cells_in_bounds(i, item_size) and get_cells_occupy(i, item_size) == null:
 			return Vector2i(i)
 	return Vector2i(-1, -1)
 
@@ -198,10 +213,7 @@ func set_cells_occupy(start_vec: Vector2i, item_size: Vector2i, set_occupy: Vari
 	if cells_occupy_data.is_empty():
 		_create_cells_data()
 	
-	if start_vec.x < 0 or start_vec.y < 0:
-		return
-		
-	if start_vec.x + item_size.x > map_index.x or start_vec.y + item_size.y > map_index.y:
+	if not is_cells_in_bounds(start_vec, item_size):
 		return
 
 	for y in range(item_size.y):
@@ -226,14 +238,10 @@ func get_cells_occupy_map() -> Array:
 	return cell_list
 
 
-func get_cells_occupy(start_vec: Vector2i, item_size: Vector2i):
-	if start_vec.x < 0 or start_vec.y < 0:
-		return null
-		
-	if start_vec.x + item_size.x > map_index.x:
-		return null
-		
-	if start_vec.y + item_size.y > map_index.y:
+func get_cells_occupy(start_vec: Vector2i, item_size: Vector2i) -> GridItemExample:
+	assert(is_cells_in_bounds(start_vec, item_size))
+
+	if cells_occupy_data.is_empty():
 		return null
 		
 	for y in range(item_size.y):
@@ -244,11 +252,26 @@ func get_cells_occupy(start_vec: Vector2i, item_size: Vector2i):
 	return null
 
 
-func _create_grid_item_base(data: GridItemData, i_position: Vector2, i_size: Vector2i, quantity: int, is_rotated: bool, write_cache: Dictionary = {}):
+func is_cells_in_bounds(start_vec: Vector2i, item_size: Vector2i) -> bool:
+	if item_size.x <= 0 or item_size.y <= 0:
+		return false
+
+	if start_vec.x < 0 or start_vec.y < 0:
+		return false
+
+	if start_vec.x + item_size.x > map_index.x:
+		return false
+
+	if start_vec.y + item_size.y > map_index.y:
+		return false
+
+	return true
+
+
+func _create_grid_item_base(data: GridItemData, i_position: Vector2, quantity: int, is_rotated: bool, write_cache: Dictionary = {}):
 	if data == null:
 		return
-	var get_top_left = Vector2(i_position) / cell_size
-	var set_top_left = Vector2(get_top_left) * cell_size
+	var set_top_left = (Vector2(i_position) / cell_size) * cell_size
 	_add_item_to_grid(set_top_left, quantity, data, is_rotated, write_cache)
 
 
@@ -272,7 +295,7 @@ func _add_item_to_grid(i_position: Vector2, quantity: int, i_data: GridItemData,
 	inter_item._update_item_size()
 	inter_item.mouse_entered_item_rect.connect(_is_mouse_entered_item)
 	inter_item.mouse_exited_item_rect.connect(_is_mouse_exited_item)
-	set_cells_occupy(i_position_index, inter_item.item_size, inter_item)
+	set_cells_occupy(Vector2i(i_position_index), inter_item.item_size, inter_item)
 
 				 # ===== COMPUTE CELLS RECT ===== #
 
@@ -307,32 +330,6 @@ func _add_target_cells(target_vec: Vector2i) -> void:
 
 
 
-func _is_cells_empty(start_pos: Vector2i, item_size: Vector2i) -> bool:
-	if start_pos.x < 0 or start_pos.y < 0:
-		return false
-		
-	if start_pos.x + item_size.x > map_index.x:
-		return false
-		
-	if start_pos.y + item_size.y > map_index.y:
-		return false
-		
-	for rect_x in range(item_size.x):
-		for rect_y in range(item_size.y):
-			if cells_occupy_data[start_pos.y + rect_y][start_pos.x + rect_x] != null:
-				return false
-	return true
-
-func _can_place_on_grid(pos: Vector2i, item_size: Vector2i):
-	var math_bottom_right = pos + item_size - Vector2i(1, 1)
-	
-	if pos.x < 0 or pos.y < 0 \
-	 or math_bottom_right.x >= map_index.x \
-	 or math_bottom_right.y >= map_index.y:
-		return false
-		
-	return _is_cells_empty(pos, item_size)
-
 						# ===== PREVIEW ===== #
 
 func _update_cells_panel() -> void:
@@ -350,7 +347,10 @@ func _update_selecter_preview(mouse_px: Vector2, chooise_size: Vector2i) -> void
 	var top_left_index = _compute_top_left(mouse_px, chooise_size)
 	var px = (Vector2(top_left_index) + math_size) * cell_size
 	
-	if not _can_place_on_grid(top_left_index, chooise_size):
+	if not is_cells_in_bounds(top_left_index, chooise_size):
+		return
+
+	if get_cells_occupy(top_left_index, chooise_size) != null:
 		return
 	
 	var new_size = Vector2(chooise_size.x * cell_size, chooise_size.y * cell_size)
