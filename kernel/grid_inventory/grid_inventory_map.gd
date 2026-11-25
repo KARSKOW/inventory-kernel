@@ -177,6 +177,16 @@ func stacked_item(target_item: GridItemExample, selection: GridItemExample) -> b
 	target_item.update_item_viewport()
 	selection.update_item_viewport()
 
+
+func transfer_item(to: GridInventoryMap, transfer_item: Array[GridItemExample]):
+	for tr_item in transfer_item:
+		if tr_item == null:
+			continue
+		set_cells_occupy((tr_item.position / cell_size), tr_item.item_database.get_item_size(tr_item.is_rotated), null)
+	
+	to.placed_grid_item(transfer_item)
+
+
 func sorted_item():
 	var sort_collect = []
 

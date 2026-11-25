@@ -131,11 +131,15 @@ func find_grid_item(item_name: String):
 # Need TEST this function acceptable.
 func placed_grid_item(item_object: Array[GridItemExample]):
 	for item: GridItemExample in item_object:
+		if item == null:
+			continue
+
 		if scan_can_place_cells(item.item_database.get_item_size(item.is_rotated)) != Vector2i(-1, -1):
 			item.reparent(self)
 			item.position = scan_can_place_cells(item.item_database.get_item_size(item.is_rotated)) * cell_size
 			set_cells_occupy(Vector2i(Vector2(item.position) / cell_size), item.item_database.get_item_size(item.is_rotated), item)
-
+		else:
+			continue
 
 
 # Warning: Experimental.
