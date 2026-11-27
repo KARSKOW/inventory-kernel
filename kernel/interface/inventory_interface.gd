@@ -49,17 +49,17 @@ func _gui_grab_input(event: InputEvent, tar_kernel) -> void:
 	if tar_kernel != get_inventory_gui:
 		return
 	
-	if _mouse_trigger(event, MOUSE_BUTTON_LEFT):
+	if _input_event_trigger(event, "interface_grab_and_drop_item"):
 		drag_server.grab_and_drop_item()
 
 func _input(event: InputEvent) -> void:
-	if _mouse_trigger(event, MOUSE_BUTTON_RIGHT):
+	if _input_event_trigger(event, "interface_cancel_item"):
 		drag_server.grabbing_cancel()
 		
-	if _keyboard_trigger(event, "grab_half"):
+	if _input_event_trigger(event, "interface_grabbing_half_item"):
 		drag_server.grab_half_item()
 		
-	if _keyboard_trigger(event, "grab_rotate"):
+	if _input_event_trigger(event, "interface_grabbing_rotated_item"):
 		drag_server.grab_rotated_item()
 
 func _process(_delta: float) -> void:
@@ -72,14 +72,7 @@ func _get_config() -> void:
 	grab_action = int(ProjectSettings.get_setting("inventory-kernel/mouse_grab_action", 1))
 	drag_server = GrabService.new()
 
-func _mouse_trigger(event: InputEvent, button_index: int) -> bool:
-	if event is InputEventMouseButton:
-		if event.pressed and event.button_index == button_index:
-			return true
-		return false
-	return false
-	
-func _keyboard_trigger(event: InputEvent, input_name: String):
+func _input_event_trigger(event: InputEvent, input_name: String) -> bool:
 	if event.is_action_pressed(input_name):
 		return true
 	return false

@@ -182,9 +182,11 @@ func transfer_item(to: GridInventoryMap, transfer_item: Array[GridItemExample]):
 	for tr_item in transfer_item:
 		if tr_item == null:
 			continue
-		set_cells_occupy((tr_item.position / cell_size), tr_item.item_database.get_item_size(tr_item.is_rotated), null)
-	
-	to.placed_grid_item(transfer_item)
+		if to.scan_can_place_cells(tr_item.item_database.get_item_size(tr_item.is_rotated)) != Vector2i(-1, -1):
+			set_cells_occupy((tr_item.position / cell_size), tr_item.item_database.get_item_size(tr_item.is_rotated), null)
+		
+		to.placed_grid_item(tr_item)
+			
 
 
 func sorted_item():

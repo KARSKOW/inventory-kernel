@@ -5,6 +5,7 @@ extends Control
 class_name GridInventoryKernel
 
 signal inventory_overflow_item(overflow_data: Array)
+signal inventory_placed_failed()
 signal is_inventory_change(item: Node)
 
 signal _is_entered_trigger(event: InputEvent, tar_kernel)
@@ -129,18 +130,13 @@ func find_grid_item(item_name: String):
 
 # Warning: Experimental.
 # Need TEST this function acceptable.
-func placed_grid_item(item_object: Array[GridItemExample]):
-	for item: GridItemExample in item_object:
-		if item == null:
-			continue
-
-		if scan_can_place_cells(item.item_database.get_item_size(item.is_rotated)) != Vector2i(-1, -1):
-			item.reparent(self)
-			item.position = scan_can_place_cells(item.item_database.get_item_size(item.is_rotated)) * cell_size
-			set_cells_occupy(Vector2i(Vector2(item.position) / cell_size), item.item_database.get_item_size(item.is_rotated), item)
-		else:
-			continue
-
+func placed_grid_item(item_object: GridItemExample):
+	if scan_can_place_cells(item_object.item_database.get_item_size(item_object.is_rotated)) != Vector2i(-1, -1):
+		item_object.reparent(self)
+		item_object.position = scan_can_place_cells(item_object.item_database.get_item_size(item_object.is_rotated)) * cell_size
+		set_cells_occupy(Vector2i(Vector2(item_object.position) / cell_size), item_object.item_database.get_item_size(item_object.is_rotated), item_object)
+	else:
+		inventory_placed_failed.emit()
 
 # Warning: Experimental.
 # Need TEST this function acceptable.

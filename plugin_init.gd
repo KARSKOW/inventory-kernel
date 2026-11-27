@@ -20,6 +20,18 @@ const set_plugin_settings := {
 	},
 }
 
+var set_plugin_input = [
+	"input/interface_grab_and_drop_item",
+	"input/interface_cancel_item",
+	"input/interface_grabbing_half_item",
+	"input/interface_grabbing_rotated_item"
+]
+
+var input_event_example = {
+	"deadzone": 0.2,
+	"events": []
+}
+
 
 var driver_theme: Control
 
@@ -28,10 +40,18 @@ func _enter_tree() -> void:
 	driver_theme = inventory_tools.instantiate()
 	driver_theme.name = "InventoryKernelScreen"
 	driver_theme.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	driver_theme.hide()
+	
+	
 	EditorInterface.get_editor_main_screen().add_child(driver_theme)
 
-	driver_theme.hide()
+	
+	for input_setting in set_plugin_settings:
+		if not ProjectSettings.has_setting(input_setting):
+			ProjectSettings.set_setting(input_setting, input_event_example)
+			
 
+	InputMap.load_from_project_settings()
 	_init_settings()
 
 
@@ -43,16 +63,24 @@ func _exit_tree() -> void:
 
 func _enable_plugin() -> void:
 	add_autoload_singleton("InventoryInterface", "res://addons/inventorykernel/kernel/interface/inventory_interface.gd")
-	_init_settings()
+
 	ProjectSettings.save()
 
 
 func _disable_plugin() -> void:
 	remove_autoload_singleton("InventoryInterface")
-	# 当前设置键 + 旧版本遗留键都清理，保证卸载插件后项目里不残留配置
+	
+	_clear_settings()
+	ProjectSettings.save()
+
+
+func _clear_settings():
 	for key in set_plugin_settings:
 		ProjectSettings.clear(key)
-	ProjectSettings.save()
+		
+	for input_key in set_plugin_input:
+		ProjectSettings.clear(input_key)
+
 
 
 func _init_settings() -> void:
@@ -61,7 +89,7 @@ func _init_settings() -> void:
 		# 不覆盖用户已经保存过的值
 		if not ProjectSettings.has_setting(key):
 			ProjectSettings.set_setting(key, data["value"])
-
+		
 		ProjectSettings.add_property_info({
 			"name": key,
 			"type": data["type"],
